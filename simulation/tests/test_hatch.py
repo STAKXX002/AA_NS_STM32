@@ -1,0 +1,38 @@
+"""Hatch actuator behaviour."""
+import time
+
+import pytest
+
+from harness import T_HATCH
+
+
+def test_second_open_is_busy(sim):
+  sim.uart('OPEN')
+  sim.expect('OPENING')
+  sim.uart('OPEN')
+  sim.expect('BUSY')
+  sim.uart('STOP')
+  sim.expect('HATCH STOPPED')
+
+
+def test_close_while_opening_is_busy(sim):
+  sim.uart('OPEN')
+  sim.expect('OPENING')
+  sim.uart('CLOSE')
+  sim.expect('BUSY')
+
+
+def test_hatch_blocked_while_an_axis_is_moving(sim):
+  sim.uart('HOME 1')
+  sim.expect('A1 HOME')
+  time.sleep(0.3)
+  sim.uart('OPEN')
+  sim.expect('BUSY')
+
+
+@pytest.mark.slow
+def test_open_then_close(sim):
+  sim.uart('OPEN')
+  sim.expect('OPENED', timeout=T_HATCH)
+  sim.uart('CLOSE')
+  sim.expect('CLOSED', timeout=T_HATCH)

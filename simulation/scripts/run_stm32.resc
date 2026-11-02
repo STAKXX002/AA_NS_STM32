@@ -1,0 +1,36 @@
+mach create "stm32f446"
+machine LoadPlatformDescription @platforms/cpus/stm32f4.repl
+
+# Suppress non-critical USART peripheral warnings
+logLevel 3 sysbus.usart2
+
+# Increased quantum step size from 0.0001 to 0.001 to prevent host wall-clock timeout during motor stepping
+emulation SetGlobalQuantum "0.001"
+
+# Point at the Simulation build ELF (RENODE_BUILD=ON - skips the IWDG
+# watchdog, since Renode's IWDG timing runs closer to host wall-clock
+# than a real LSI oscillator and can trip it spuriously under this
+# quantum. Never point this at build/Release - that's what gets flashed,
+# and it always has the watchdog compiled in.)
+sysbus LoadELF @build/Simulation/AA_STM.elf
+
+# Endstops are active-low: drive every MIN/MAX pin HIGH (released) on boot.
+# Pin map must match the table at the top of Core/Src/axis.c:
+#   A1 MIN PB10 MAX PB11 | A2 MIN PB8 MAX PB9 | A3 MIN PC3 MAX PC4 | A4 MIN PC9 MAX PC10
+sysbus.gpioPortB OnGPIO 10 true
+sysbus.gpioPortB OnGPIO 11 true
+sysbus.gpioPortB OnGPIO 8 true
+sysbus.gpioPortB OnGPIO 9 true
+sysbus.gpioPortC OnGPIO 3 true
+sysbus.gpioPortC OnGPIO 4 true
+sysbus.gpioPortC OnGPIO 9 true
+sysbus.gpioPortC OnGPIO 10 true
+
+# Light relay (PB7) HIGH on boot (inactive state for an active-LOW relay)
+sysbus.gpioPortB OnGPIO 7 true
+
+# Setup socket server for UART2 communication with the Python script
+emulation CreateServerSocketTerminal 1234 "uart_terminal"
+connector Connect sysbus.usart2 uart_terminal
+
+start
