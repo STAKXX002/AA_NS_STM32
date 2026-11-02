@@ -3,12 +3,17 @@
 #include <stddef.h>
 
 /* ---------------------------------------------------------------------
- * Pin table. Draft for the AA breakout: axes 1-2 reuse the Swapping
- * system's Z1/Z2 pins and the freed PB9 (fan relay) / PB11; axes 3-4 sit
- * on GPIOC. Avoid: PA2/PA3 (console), PA13/PA14 (SWD), PB3 (SWO),
- * PC13 (user button), PA5 (LED). Update this table when the PCB is
- * redesigned - it is the only place the pins are defined.
- * Endstop polarity: see ENDSTOP_ACTIVE_LOW in aa_config.h.
+ * Pin table - grouped so each axis lands on ONE Nucleo connector:
+ *   A1 -> CN8  analog header A0..A4
+ *   A2 -> CN5  digital header D8..D12
+ *   A3 -> CN9  digital header D2, D4..D7   (D3 = PB3/SWO left empty)
+ *   A4 -> CN10 morpho, top block (pins 1-6; PB9 left spare)
+ * Within each axis: STEP, DIR, EN, MIN, MAX in connector order.
+ * Spare (still free): PC0 (A5), PB9, PC2, PC3, PB1, PB2.
+ * Avoid: PA2/PA3 (console), PA13/PA14 (SWD), PB3 (SWO), PC13 (button),
+ * PA5 (LED), PB7 (light relay), PB12-PB15 (hatch).
+ * Update this table when the PCB is redesigned - it is the only place the
+ * pins are defined. Endstop polarity: see ENDSTOP_ACTIVE_LOW in aa_config.h.
  * ------------------------------------------------------------------- */
 typedef struct {
     GPIO_TypeDef *step_port; uint16_t step_pin;
@@ -20,10 +25,11 @@ typedef struct {
 } AxisHw;
 
 static const AxisHw hw[NUM_AXES] = {
-    /* A1 */ { GPIOB, GPIO_PIN_0,  GPIOB, GPIO_PIN_1,  GPIOB, GPIO_PIN_2,  GPIOB, GPIO_PIN_10, GPIOB, GPIO_PIN_11, false },
-    /* A2 */ { GPIOB, GPIO_PIN_4,  GPIOB, GPIO_PIN_5,  GPIOB, GPIO_PIN_6,  GPIOB, GPIO_PIN_8,  GPIOB, GPIO_PIN_9,  false },
-    /* A3 */ { GPIOC, GPIO_PIN_0,  GPIOC, GPIO_PIN_1,  GPIOC, GPIO_PIN_2,  GPIOC, GPIO_PIN_3,  GPIOC, GPIO_PIN_4,  false },
-    /* A4 */ { GPIOC, GPIO_PIN_5,  GPIOC, GPIO_PIN_6,  GPIOC, GPIO_PIN_8,  GPIOC, GPIO_PIN_9,  GPIOC, GPIO_PIN_10, false },
+    /*          STEP              DIR               EN                MIN                MAX            */
+    /* A1 */ { GPIOA, GPIO_PIN_0,  GPIOA, GPIO_PIN_1,  GPIOA, GPIO_PIN_4,  GPIOB, GPIO_PIN_0,  GPIOC, GPIO_PIN_1,  false },
+    /* A2 */ { GPIOA, GPIO_PIN_9,  GPIOC, GPIO_PIN_7,  GPIOB, GPIO_PIN_6,  GPIOA, GPIO_PIN_7,  GPIOA, GPIO_PIN_6,  false },
+    /* A3 */ { GPIOA, GPIO_PIN_10, GPIOB, GPIO_PIN_5,  GPIOB, GPIO_PIN_4,  GPIOB, GPIO_PIN_10, GPIOA, GPIO_PIN_8,  false },
+    /* A4 */ { GPIOC, GPIO_PIN_6,  GPIOC, GPIO_PIN_5,  GPIOC, GPIO_PIN_8,  GPIOC, GPIO_PIN_9,  GPIOB, GPIO_PIN_8,  false },
 };
 
 typedef struct {
