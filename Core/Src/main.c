@@ -323,30 +323,63 @@ static void MX_GPIO_Init(void)
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOH_CLK_ENABLE();
+  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, Z1_STEP_Pin|Z1_DIR_Pin|Z1_EN_Pin|GRIP_IN1_Pin
-                          |GRIP_IN2_Pin|GRIP_IN3_Pin|GRIP_IN4_Pin|Z2_STEP_Pin
-                          |Z2_DIR_Pin|Z2_EN_Pin|RELAY_LIGHT_Pin|RELAY_FAN_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, A1_MAX_Pin|A4_DIR_Pin|A4_STEP_Pin|A2_DIR_Pin
+                          |A4_EN_Pin|A2_STEP_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : Z1_STEP_Pin Z1_DIR_Pin Z1_EN_Pin GRIP_IN1_Pin
-                           GRIP_IN2_Pin GRIP_IN3_Pin GRIP_IN4_Pin Z2_STEP_Pin
-                           Z2_DIR_Pin Z2_EN_Pin RELAY_LIGHT_Pin RELAY_FAN_Pin */
-  GPIO_InitStruct.Pin = Z1_STEP_Pin|Z1_DIR_Pin|Z1_EN_Pin|GRIP_IN1_Pin
-                          |GRIP_IN2_Pin|GRIP_IN3_Pin|GRIP_IN4_Pin|Z2_STEP_Pin
-                          |Z2_DIR_Pin|Z2_EN_Pin|RELAY_LIGHT_Pin|RELAY_FAN_Pin;
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOA, A1_STEP_Pin|A1_DIR_Pin|A1_EN_Pin|A3_STEP_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, GRIP_IN1_Pin|GRIP_IN2_Pin|GRIP_IN3_Pin|GRIP_IN4_Pin
+                          |A3_EN_Pin|A3_DIR_Pin|A2_EN_Pin|RELAY_LIGHT_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pins : A1_MAX_Pin A4_DIR_Pin A4_STEP_Pin A2_DIR_Pin
+                           A4_EN_Pin A2_STEP_Pin */
+  GPIO_InitStruct.Pin = A1_MAX_Pin|A4_DIR_Pin|A4_STEP_Pin|A2_DIR_Pin
+                          |A4_EN_Pin|A2_STEP_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : A1_STEP_Pin A1_DIR_Pin A1_EN_Pin A3_STEP_Pin */
+  GPIO_InitStruct.Pin = A1_STEP_Pin|A1_DIR_Pin|A1_EN_Pin|A3_STEP_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : A2_MAX_Pin A2_MIN_Pin A3_MAX_Pin */
+  GPIO_InitStruct.Pin = A2_MAX_Pin|A2_MIN_Pin|A3_MAX_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : A1_MIN_Pin A3_MIN_Pin A4_MAX_Pin */
+  GPIO_InitStruct.Pin = A1_MIN_Pin|A3_MIN_Pin|A4_MAX_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : GRIP_IN1_Pin GRIP_IN2_Pin GRIP_IN3_Pin GRIP_IN4_Pin
+                           A3_EN_Pin A3_DIR_Pin A2_EN_Pin RELAY_LIGHT_Pin */
+  GPIO_InitStruct.Pin = GRIP_IN1_Pin|GRIP_IN2_Pin|GRIP_IN3_Pin|GRIP_IN4_Pin
+                          |A3_EN_Pin|A3_DIR_Pin|A2_EN_Pin|RELAY_LIGHT_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : Z1_LIMIT_Pin Z2_LIMIT_Pin */
-  GPIO_InitStruct.Pin = Z1_LIMIT_Pin|Z2_LIMIT_Pin;
+  /*Configure GPIO pin : A4_MIN_Pin */
+  GPIO_InitStruct.Pin = A4_MIN_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  HAL_GPIO_Init(A4_MIN_GPIO_Port, &GPIO_InitStruct);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 
