@@ -124,10 +124,10 @@ class Sim:
 
   # (port, pin) of each endstop - keep in sync with the table in Core/Src/axis.c
   ENDSTOPS = {
-      (1, 'min'): ('B', 10), (1, 'max'): ('B', 11),
-      (2, 'min'): ('B', 8),  (2, 'max'): ('B', 9),
-      (3, 'min'): ('C', 3),  (3, 'max'): ('C', 4),
-      (4, 'min'): ('C', 9),  (4, 'max'): ('C', 10),
+      (1, 'min'): ('B', 0),  (1, 'max'): ('C', 1),
+      (2, 'min'): ('A', 7),  (2, 'max'): ('A', 6),
+      (3, 'min'): ('B', 10), (3, 'max'): ('A', 8),
+      (4, 'min'): ('C', 9),  (4, 'max'): ('B', 8),
   }
 
   def _switch(self, axis, which, pressed):

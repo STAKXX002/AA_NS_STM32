@@ -16,15 +16,15 @@ sysbus LoadELF @build/Simulation/AA_STM.elf
 
 # Endstops are active-low: drive every MIN/MAX pin HIGH (released) on boot.
 # Pin map must match the table at the top of Core/Src/axis.c:
-#   A1 MIN PB10 MAX PB11 | A2 MIN PB8 MAX PB9 | A3 MIN PC3 MAX PC4 | A4 MIN PC9 MAX PC10
+#   A1 MIN PB0  MAX PC1 | A2 MIN PA7  MAX PA6 | A3 MIN PB10 MAX PA8 | A4 MIN PC9 MAX PB8
+sysbus.gpioPortB OnGPIO 0 true
+sysbus.gpioPortC OnGPIO 1 true
+sysbus.gpioPortA OnGPIO 7 true
+sysbus.gpioPortA OnGPIO 6 true
 sysbus.gpioPortB OnGPIO 10 true
-sysbus.gpioPortB OnGPIO 11 true
-sysbus.gpioPortB OnGPIO 8 true
-sysbus.gpioPortB OnGPIO 9 true
-sysbus.gpioPortC OnGPIO 3 true
-sysbus.gpioPortC OnGPIO 4 true
+sysbus.gpioPortA OnGPIO 8 true
 sysbus.gpioPortC OnGPIO 9 true
-sysbus.gpioPortC OnGPIO 10 true
+sysbus.gpioPortB OnGPIO 8 true
 
 # Light relay (PB7) HIGH on boot (inactive state for an active-LOW relay)
 sysbus.gpioPortB OnGPIO 7 true
