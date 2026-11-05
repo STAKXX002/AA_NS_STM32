@@ -152,6 +152,12 @@ static void update_axis(int i, uint32_t now) {
             axis_move_to(i, axis_pos(i) + BACKOFF_STEPS);
             st[i] = AX_HOME_BACKOFF;
             stateStart[i] = now;
+        } else if (axis_max_active(i)) {
+            /* Heading for MIN but MAX tripped: motor direction is reversed
+             * (see dir_invert in axis.c) or the switches are swapped. The ISR
+             * only guards the switch in the direction of travel, so this is
+             * what stops a reversed axis from driving into its far end. */
+            fault_axis(i, "MAX HIT WHILE HOMING");
         } else if (elapsed > HOME_TIMEOUT_MS) {
             fault_axis(i, "HOME TIMEOUT");
         } else if (axis_done(i)) {
@@ -160,7 +166,9 @@ static void update_axis(int i, uint32_t now) {
         break;
 
     case AX_HOME_BACKOFF:
-        if (elapsed > BACKOFF_TIMEOUT_MS) {
+        if (stop == STOP_MAX || axis_max_active(i)) {
+            fault_axis(i, "MAX HIT WHILE HOMING");
+        } else if (elapsed > BACKOFF_TIMEOUT_MS) {
             fault_axis(i, "BACKOFF TIMEOUT");
         } else if (axis_done(i)) {
             if (axis_min_active(i)) { fault_axis(i, "MIN STUCK"); break; }
@@ -185,6 +193,8 @@ static void update_axis(int i, uint32_t now) {
             axis_move_to(i, calMaxPos[i] - BACKOFF_STEPS);
             st[i] = AX_CAL_BACKOFF;
             stateStart[i] = now;
+        } else if (axis_min_active(i)) {
+            fault_axis(i, "MIN HIT DURING CAL");   /* MIN pressed while heading for MAX */
         } else if (elapsed > CAL_TIMEOUT_MS) {
             fault_axis(i, "CAL TIMEOUT");
         } else if (axis_done(i)) {
@@ -210,6 +220,12 @@ static void update_axis(int i, uint32_t now) {
          * steps, wrong travel setting, mechanical slip) - never "success". */
         if (stop == STOP_MIN)      { fault_axis(i, "MIN HIT"); }
         else if (stop == STOP_MAX) { fault_axis(i, "MAX HIT"); }
+        else if (axis_min_active(i) || axis_max_active(i)) {
+            /* A move stays inside [0, travel], where both switches are
+             * released. A pressed switch (debounced) means the position is
+             * wrong or the axis is going the wrong way. */
+            fault_axis(i, "SWITCH ACTIVE");
+        }
         else if (elapsed > MOVE_TIMEOUT_MS) { fault_axis(i, "MOVE TIMEOUT"); }
         else if (axis_done(i)) {
             st[i] = AX_READY;

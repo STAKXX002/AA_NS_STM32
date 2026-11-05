@@ -35,6 +35,7 @@ static long min_trig[NUM_AXES];        /* MIN pressed when phys <= this */
 static long max_trig[NUM_AXES];        /* MAX pressed when phys >= this */
 static int  glitch_ticks[NUM_AXES];    /* force MIN pressed for N ticks (bounce/noise) */
 static long total_steps[NUM_AXES];     /* every STEP rising edge, either direction */
+static bool dir_flip[NUM_AXES];        /* model a reversed motor/screw: DIR level means the opposite way */
 
 uint32_t HAL_GetTick(void) { return tick_count / 10; }
 void HAL_GPIO_Init(GPIO_TypeDef *p, GPIO_InitTypeDef *g) { (void)p; (void)g; }
@@ -45,7 +46,7 @@ void HAL_GPIO_WritePin(GPIO_TypeDef *p, uint16_t pin, GPIO_PinState s) {
     for (int i = 0; i < NUM_AXES; i++) {
         if (p == STEP_PIN[i].p && pin == STEP_PIN[i].pin && s && !(before & pin)) {
             bool pos_dir = (DIR_PIN[i].p->ODR & DIR_PIN[i].pin) != 0;
-            phys[i] += pos_dir ? 1 : -1;
+            phys[i] += (pos_dir != dir_flip[i]) ? 1 : -1;
             total_steps[i]++;
         }
     }
@@ -109,7 +110,7 @@ static void fresh(double travel_mm, double start_mm) {
     memset(total_steps, 0, sizeof total_steps);
     tick_count = 0;
     for (int i = 0; i < NUM_AXES; i++) {
-        min_trig[i] = 0; max_trig[i] = MM(travel_mm); phys[i] = MM(start_mm); glitch_ticks[i] = 0;
+        min_trig[i] = 0; max_trig[i] = MM(travel_mm); phys[i] = MM(start_mm); glitch_ticks[i] = 0; dir_flip[i] = false;
     }
     alignment_init(&htim_fake);
     commands_init(&huart_fake);
@@ -294,6 +295,32 @@ static void t_commands(void) {
     CHECK(total_steps[1] == 0, "HOME ALL must not partially start when one axis is busy");
 }
 
+static void t_reversed_direction(void) {
+    /* Reversed motor wiring: HOME drives toward the FAR end. The ISR does not
+     * guard that switch (it only watches the one in the direction of travel),
+     * so the state machine must fault on it instead of grinding into the end. */
+    fresh(60, 30);
+    dir_flip[0] = true;
+    send("HOME 1");
+    CHECK(run_until("FAULT", 20000), "reversed axis must fault:\n%s", out_since_mark());
+    SEEN("A1 MAX HIT WHILE HOMING");
+    CHECK(phys[0] >= MM(60) && phys[0] <= MM(60) + 20, "stopped at phys=%ld, want just past MAX trigger %ld", phys[0], MM(60));
+    long s = total_steps[0];
+    run_ms(500);
+    CHECK(total_steps[0] == s, "stepping continued after the fault");
+    for (int i = 0; i < NUM_AXES; i++) CHECK(en_disabled(i), "A%d driver enabled after fault", i + 1);
+}
+
+static void t_switch_during_move(void) {
+    fresh(100, 10);
+    home_and_wait(1);
+    send("MOVE 1 30");
+    run_ms(1500);
+    glitch_ticks[0] = 120;                                 /* 12 ms (> 5 ms debounce) MIN press while moving away */
+    CHECK(run_until("FAULT", 3000), "a debounced switch press during a move must fault:\n%s", out_since_mark());
+    SEEN("A1 SWITCH ACTIVE");
+}
+
 int main(void) {
     FILE *m = open_memstream(&outbuf, &outlen);
     FILE *real_stdout = stdout;
@@ -305,6 +332,7 @@ int main(void) {
         {"min_not_found", t_min_not_found}, {"start_on_switch", t_start_on_switch},
         {"fault_stops_all", t_fault_stops_all}, {"debounce", t_debounce},
         {"hatch_interlock", t_hatch_interlock}, {"stop_and_rst", t_stop_and_rst}, {"commands", t_commands},
+        {"reversed_direction", t_reversed_direction}, {"switch_during_move", t_switch_during_move},
     };
     int n = sizeof tests / sizeof tests[0], failed_tests = 0;
     for (int i = 0; i < n; i++) {
