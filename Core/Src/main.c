@@ -58,7 +58,6 @@ UART_HandleTypeDef huart2;
 /* All state (steppers, hatch, relays, UART command buffer) now lives
  * inside its own module - see relay.c, hatch.c, alignment.c, commands.c.
  * main.c no longer holds any of the system's runtime state itself. */
-static IWDG_HandleTypeDef hiwdg;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -131,12 +130,10 @@ int main(void)
    * closer to host wall-clock than simulated LSI, and can trip this
    * spuriously when the sim is running slower than real-time - never
    * define RENODE_BUILD for a binary you intend to flash. */
-  hiwdg.Instance = IWDG;
-  hiwdg.Init.Prescaler = IWDG_PRESCALER_64;
-  hiwdg.Init.Reload = 999;
-  if (HAL_IWDG_Init(&hiwdg) != HAL_OK) {
-      Error_Handler();
-  }
+  MX_IWDG_Init();   /* CubeMX-generated: prescaler 64, reload 999 (~2 s) */
+#else
+  (void)MX_IWDG_Init;   /* sim build never starts the watchdog; this keeps the
+                         * generated function from tripping -Wunused-function */
 #endif
 
   relay_init();      /* force light off - don't trust CubeMX's GPIO init level */

@@ -66,13 +66,6 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     Core/Src/alignment.c
     Core/Src/system.c
     Core/Src/commands.c
-
-    # IWDG HAL driver - added here (not via CubeMX/.ioc) because IWDG
-    # isn't enabled as a peripheral in the .ioc yet. If you ever enable
-    # IWDG through the CubeMX GUI, it'll generate its own entry in
-    # cmake/stm32cubemx/CMakeLists.txt - remove the line below when that
-    # happens, so the file isn't compiled twice.
-    Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_iwdg.c
 )
 
 # Build traceability: aa_build_info.h is generated at configure time from
