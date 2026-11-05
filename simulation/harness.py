@@ -96,6 +96,12 @@ class Sim:
         time.sleep(0.1)
     self.sock.settimeout(0.2)
     self.expect('HOME REQUIRED', timeout=boot_timeout)
+    # The resc drives the endstop pins high BEFORE the firmware runs, but
+    # Renode can lose that level when the firmware reconfigures a pin (seen
+    # on PC1 = A1 MAX), which reads as a pressed switch. Re-apply the
+    # released (high) level now that boot and GPIO init are done.
+    self.release()
+    time.sleep(0.2)
 
   def cleanup(self):
     if self.sock:
