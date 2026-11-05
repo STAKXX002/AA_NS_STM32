@@ -95,10 +95,10 @@ void Error_Handler(void);
 #define A4_MIN_GPIO_Port GPIOC
 #define A3_MAX_Pin GPIO_PIN_8
 #define A3_MAX_GPIO_Port GPIOA
+#define A2_STEP_Pin GPIO_PIN_9
+#define A2_STEP_GPIO_Port GPIOA
 #define A3_STEP_Pin GPIO_PIN_10
 #define A3_STEP_GPIO_Port GPIOA
-#define A2_STEP_Pin GPIO_PIN_12
-#define A2_STEP_GPIO_Port GPIOC
 #define A3_EN_Pin GPIO_PIN_4
 #define A3_EN_GPIO_Port GPIOB
 #define A3_DIR_Pin GPIO_PIN_5
