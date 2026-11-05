@@ -33,7 +33,7 @@ the fan relay is dropped, the two-axis Z alignment logic is replaced by per-axis
 An endstop hit during `MOVE`, an unreachable endstop, a timeout, or a switch that is already
 pressed at the start of `HOME` latches a fault: every driver is disabled until `RST`.
 
-## First bring-up checklist (single motor, Monday test)
+## First bring-up checklist (single axis)
 
 1. In `aa_config.h` set `STEPS_PER_MM` from the screw pitch and driver microstepping (200 is carried over).
 2. Confirm endstop polarity: `POS` should show `MIN 0 MAX 0` with both switches released and `1` when pressed.
