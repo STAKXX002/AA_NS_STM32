@@ -8,6 +8,7 @@ obj/
 .idea/
 .settings/
 .mxproject
+.clangd
 *.launch
 
 # OS metadata
@@ -29,3 +30,4 @@ Core/Inc/stakhal_build_info.h
 
 *.log
 .pytest_cache/
+
