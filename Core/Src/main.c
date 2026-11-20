@@ -41,13 +41,11 @@
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
-
 /* USER CODE BEGIN PM */
 
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-
 IWDG_HandleTypeDef hiwdg;
 
 TIM_HandleTypeDef htim3;
@@ -63,9 +61,9 @@ UART_HandleTypeDef huart2;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_IWDG_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_USART2_UART_Init(void);
-static void MX_IWDG_Init(void);
 /* USER CODE BEGIN PFP */
 /* (nothing needed here - relay.h/hatch.h/alignment.h/commands.h already
  * declare everything main.c calls) */
@@ -145,12 +143,6 @@ int main(void)
   printf("AA_BUILD: %s\r\n", AA_BUILD_HASH);
   /* USER CODE END 2 */
 
-  /* Initialize leds */
-  BSP_LED_Init(LED2);
-
-  /* Initialize USER push-button, will be used to trigger an interrupt each time it's pressed.*/
-  BSP_PB_Init(BUTTON_USER, BUTTON_MODE_EXTI);
-
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
@@ -196,7 +188,7 @@ void SystemClock_Config(void)
   * in the RCC_OscInitTypeDef structure.
   */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_HSE;
-  RCC_OscInitStruct.HSEState = RCC_HSE_BYPASS;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.LSIState = RCC_LSI_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
@@ -352,63 +344,73 @@ static void MX_GPIO_Init(void)
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOH_CLK_ENABLE();
-  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, A1_STEP_Pin|A1_DIR_Pin|A1_EN_Pin|A2_STEP_Pin
-                          |A3_STEP_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, GRIP_IN1_Pin|GRIP_IN2_Pin|GRIP_IN3_Pin|GRIP_IN4_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, A4_DIR_Pin|A4_STEP_Pin|A2_DIR_Pin|A4_EN_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, A1_STEP_Pin|A1_DIR_Pin|A2_STEP_Pin|A4_STEP_Pin
+                          |A4_DIR_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GRIP_IN1_Pin|GRIP_IN2_Pin|GRIP_IN3_Pin|GRIP_IN4_Pin
-                          |A3_EN_Pin|A3_DIR_Pin|A2_EN_Pin|RELAY_LIGHT_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, A1_EN_Pin|A4_EN_Pin, GPIO_PIN_SET);
 
-  /*Configure GPIO pins : A1_MAX_Pin A4_MIN_Pin */
-  GPIO_InitStruct.Pin = A1_MAX_Pin|A4_MIN_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOA, A2_DIR_Pin|A3_STEP_Pin|A3_DIR_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : A1_STEP_Pin A1_DIR_Pin A1_EN_Pin A2_STEP_Pin
-                           A3_STEP_Pin */
-  GPIO_InitStruct.Pin = A1_STEP_Pin|A1_DIR_Pin|A1_EN_Pin|A2_STEP_Pin
-                          |A3_STEP_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOA, A2_EN_Pin|A3_EN_Pin, GPIO_PIN_SET);
 
-  /*Configure GPIO pins : A2_MAX_Pin A2_MIN_Pin A3_MAX_Pin */
-  GPIO_InitStruct.Pin = A2_MAX_Pin|A2_MIN_Pin|A3_MAX_Pin;
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(RELAY_LIGHT_GPIO_Port, RELAY_LIGHT_Pin, GPIO_PIN_SET);
+
+  /*Configure GPIO pins : A1_MIN_Pin A1_MAX_Pin A2_MIN_Pin A2_MAX_Pin */
+  GPIO_InitStruct.Pin = A1_MIN_Pin|A1_MAX_Pin|A2_MIN_Pin|A2_MAX_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : A4_DIR_Pin A4_STEP_Pin A2_DIR_Pin A4_EN_Pin */
-  GPIO_InitStruct.Pin = A4_DIR_Pin|A4_STEP_Pin|A2_DIR_Pin|A4_EN_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  /*Configure GPIO pins : A3_MIN_Pin A3_MAX_Pin */
+  GPIO_InitStruct.Pin = A3_MIN_Pin|A3_MAX_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : A1_MIN_Pin A3_MIN_Pin A4_MAX_Pin */
-  GPIO_InitStruct.Pin = A1_MIN_Pin|A3_MIN_Pin|A4_MAX_Pin;
+  /*Configure GPIO pins : A4_MIN_Pin A4_MAX_Pin */
+  GPIO_InitStruct.Pin = A4_MIN_Pin|A4_MAX_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*Configure GPIO pins : GRIP_IN1_Pin GRIP_IN2_Pin GRIP_IN3_Pin GRIP_IN4_Pin
-                           A3_EN_Pin A3_DIR_Pin A2_EN_Pin RELAY_LIGHT_Pin */
+                           RELAY_LIGHT_Pin */
   GPIO_InitStruct.Pin = GRIP_IN1_Pin|GRIP_IN2_Pin|GRIP_IN3_Pin|GRIP_IN4_Pin
-                          |A3_EN_Pin|A3_DIR_Pin|A2_EN_Pin|RELAY_LIGHT_Pin;
+                          |RELAY_LIGHT_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : A1_STEP_Pin A1_DIR_Pin A1_EN_Pin A2_STEP_Pin
+                           A4_STEP_Pin A4_DIR_Pin A4_EN_Pin */
+  GPIO_InitStruct.Pin = A1_STEP_Pin|A1_DIR_Pin|A1_EN_Pin|A2_STEP_Pin
+                          |A4_STEP_Pin|A4_DIR_Pin|A4_EN_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : A2_DIR_Pin A2_EN_Pin A3_STEP_Pin A3_DIR_Pin
+                           A3_EN_Pin */
+  GPIO_InitStruct.Pin = A2_DIR_Pin|A2_EN_Pin|A3_STEP_Pin|A3_DIR_Pin
+                          |A3_EN_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 

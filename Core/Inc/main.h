@@ -29,8 +29,6 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
 
-#include "stm32f4xx_nucleo.h"
-
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -59,24 +57,22 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define A1_MAX_Pin GPIO_PIN_1
-#define A1_MAX_GPIO_Port GPIOC
-#define A1_STEP_Pin GPIO_PIN_0
-#define A1_STEP_GPIO_Port GPIOA
-#define A1_DIR_Pin GPIO_PIN_1
-#define A1_DIR_GPIO_Port GPIOA
-#define A1_EN_Pin GPIO_PIN_4
-#define A1_EN_GPIO_Port GPIOA
-#define A2_MAX_Pin GPIO_PIN_6
-#define A2_MAX_GPIO_Port GPIOA
-#define A2_MIN_Pin GPIO_PIN_7
+#define A1_MIN_Pin GPIO_PIN_4
+#define A1_MIN_GPIO_Port GPIOA
+#define A1_MAX_Pin GPIO_PIN_5
+#define A1_MAX_GPIO_Port GPIOA
+#define A2_MIN_Pin GPIO_PIN_6
 #define A2_MIN_GPIO_Port GPIOA
-#define A4_DIR_Pin GPIO_PIN_5
-#define A4_DIR_GPIO_Port GPIOC
-#define A1_MIN_Pin GPIO_PIN_0
-#define A1_MIN_GPIO_Port GPIOB
-#define A3_MIN_Pin GPIO_PIN_10
-#define A3_MIN_GPIO_Port GPIOB
+#define A2_MAX_Pin GPIO_PIN_7
+#define A2_MAX_GPIO_Port GPIOA
+#define A3_MIN_Pin GPIO_PIN_4
+#define A3_MIN_GPIO_Port GPIOC
+#define A3_MAX_Pin GPIO_PIN_5
+#define A3_MAX_GPIO_Port GPIOC
+#define A4_MIN_Pin GPIO_PIN_0
+#define A4_MIN_GPIO_Port GPIOB
+#define A4_MAX_Pin GPIO_PIN_1
+#define A4_MAX_GPIO_Port GPIOB
 #define GRIP_IN1_Pin GPIO_PIN_12
 #define GRIP_IN1_GPIO_Port GPIOB
 #define GRIP_IN2_Pin GPIO_PIN_13
@@ -85,30 +81,32 @@ void Error_Handler(void);
 #define GRIP_IN3_GPIO_Port GPIOB
 #define GRIP_IN4_Pin GPIO_PIN_15
 #define GRIP_IN4_GPIO_Port GPIOB
-#define A4_STEP_Pin GPIO_PIN_6
-#define A4_STEP_GPIO_Port GPIOC
-#define A2_DIR_Pin GPIO_PIN_7
-#define A2_DIR_GPIO_Port GPIOC
-#define A4_EN_Pin GPIO_PIN_8
-#define A4_EN_GPIO_Port GPIOC
-#define A4_MIN_Pin GPIO_PIN_9
-#define A4_MIN_GPIO_Port GPIOC
-#define A3_MAX_Pin GPIO_PIN_8
-#define A3_MAX_GPIO_Port GPIOA
+#define A1_STEP_Pin GPIO_PIN_6
+#define A1_STEP_GPIO_Port GPIOC
+#define A1_DIR_Pin GPIO_PIN_7
+#define A1_DIR_GPIO_Port GPIOC
+#define A1_EN_Pin GPIO_PIN_8
+#define A1_EN_GPIO_Port GPIOC
 #define A2_STEP_Pin GPIO_PIN_9
-#define A2_STEP_GPIO_Port GPIOA
+#define A2_STEP_GPIO_Port GPIOC
+#define A2_DIR_Pin GPIO_PIN_8
+#define A2_DIR_GPIO_Port GPIOA
+#define A2_EN_Pin GPIO_PIN_9
+#define A2_EN_GPIO_Port GPIOA
 #define A3_STEP_Pin GPIO_PIN_10
 #define A3_STEP_GPIO_Port GPIOA
-#define A3_EN_Pin GPIO_PIN_4
-#define A3_EN_GPIO_Port GPIOB
-#define A3_DIR_Pin GPIO_PIN_5
-#define A3_DIR_GPIO_Port GPIOB
-#define A2_EN_Pin GPIO_PIN_6
-#define A2_EN_GPIO_Port GPIOB
+#define A3_DIR_Pin GPIO_PIN_11
+#define A3_DIR_GPIO_Port GPIOA
+#define A3_EN_Pin GPIO_PIN_12
+#define A3_EN_GPIO_Port GPIOA
+#define A4_STEP_Pin GPIO_PIN_10
+#define A4_STEP_GPIO_Port GPIOC
+#define A4_DIR_Pin GPIO_PIN_11
+#define A4_DIR_GPIO_Port GPIOC
+#define A4_EN_Pin GPIO_PIN_12
+#define A4_EN_GPIO_Port GPIOC
 #define RELAY_LIGHT_Pin GPIO_PIN_7
 #define RELAY_LIGHT_GPIO_Port GPIOB
-#define A4_MAX_Pin GPIO_PIN_8
-#define A4_MAX_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 
