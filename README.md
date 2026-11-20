@@ -1,4 +1,4 @@
-# AA_STM - Active Alignment firmware (STM32F446RE Nucleo)
+# AA_STM - Active Alignment firmware (STM32F446RET6 custom PCB)
 
 Four independent lead-screw actuators, each with a STEP/DIR/EN driver and MIN/MAX endstops.
 Forked from `AA_NS_STM_PORT` (Swapping system): the hatch and light relay modules are kept,
@@ -10,7 +10,7 @@ the fan relay is dropped, the two-axis Z alignment logic is replaced by per-axis
 |------|------|
 | `Core/Src/axis.c` | TIM3 100 us ISR: step pulses, ramp, **endstop sampling + immediate halt**; pin table |
 | `Core/Src/alignment.c` | per-axis state machine: HOME, CAL, MOVE, HALT |
-| `Core/Src/commands.c` | UART command parser (115200 8N1 on the ST-Link VCP) |
+| `Core/Src/commands.c` | UART command parser (115200 8N1 on USART2 PA2/PA3, via an external 3.3 V USB-UART adapter) |
 | `Core/Src/system.c` | global fault latch; any fault stops **all** axes |
 | `Core/Inc/aa_config.h` | all tunables (steps/mm, travel, timeouts, endstop polarity) |
 | `host_tests/` | PC-side logic tests of the real firmware modules (`./host_tests/run.sh`, needs only gcc) |
