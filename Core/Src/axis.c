@@ -3,15 +3,22 @@
 #include <stddef.h>
 
 /* ---------------------------------------------------------------------
- * Pin table - grouped so each axis lands on ONE Nucleo connector:
- *   A1 -> CN8  analog header A0..A4
- *   A2 -> CN5  digital header D8..D12
- *   A3 -> CN9  digital header D2, D4..D7   (D3 = PB3/SWO left empty)
- *   A4 -> CN10 morpho, top block (pins 1-6; PB9 left spare)
- * Within each axis: STEP, DIR, EN, MIN, MAX in connector order.
- * Spare (still free): PC0 (A5), PB9, PC2, PC3, PB1, PB2.
- * Avoid: PA2/PA3 (console), PA13/PA14 (SWD), PB3 (SWO), PC13 (button),
- * PA5 (LED), PB7 (light relay), PB12-PB15 (hatch).
+ * Pin table for the bare STM32F446RET6 (LQFP64) PCB. Grouped by package
+ * edge so each group is a run of adjacent pins. Rule: connector pin 1 is
+ * the group's LOWEST package pin number.
+ *
+ *   ENDSTOPS (8) - right edge, pins 20-27, one 8-pin connector:
+ *     PA4 A1 MIN, PA5 A1 MAX, PA6 A2 MIN, PA7 A2 MAX,
+ *     PC4 A3 MIN, PC5 A3 MAX, PB0 A4 MIN, PB1 A4 MAX
+ *   DRIVERS  - STEP, DIR, EN (active low) are three adjacent pins:
+ *     A1 pins 37-39 (PC6 PC7 PC8)     A2 pins 40-42 (PC9 PA8 PA9)
+ *     A3 pins 43-45 (PA10 PA11 PA12)  A4 pins 51-53 (PC10 PC11 PC12)
+ *
+ * Spare: PB10, PB2 (BOOT1: keep it off endstops), PB3 (SWO), PB4-PB6, PB8,
+ * PB9, PA15, PC0-PC3, PC13, PD2.
+ * Fixed: PA2/PA3 console USART2, PA13/PA14 SWD, PH0/PH1 HSE crystal,
+ * PB7 light relay, PB12-PB15 hatch. PA5 is an endstop here, so nothing
+ * may drive it as an LED (no Nucleo BSP).
  * Update this table when the PCB is redesigned - it is the only place the
  * pins are defined. Endstop polarity: see ENDSTOP_ACTIVE_LOW in aa_config.h.
  * ------------------------------------------------------------------- */
@@ -26,10 +33,10 @@ typedef struct {
 
 static const AxisHw hw[NUM_AXES] = {
     /*          STEP              DIR               EN                MIN                MAX            */
-    /* A1 */ { GPIOA, GPIO_PIN_0,  GPIOA, GPIO_PIN_1,  GPIOA, GPIO_PIN_4,  GPIOB, GPIO_PIN_0,  GPIOC, GPIO_PIN_1,  false },
-    /* A2 */ { GPIOA, GPIO_PIN_9,  GPIOC, GPIO_PIN_7,  GPIOB, GPIO_PIN_6,  GPIOA, GPIO_PIN_7,  GPIOA, GPIO_PIN_6,  false },
-    /* A3 */ { GPIOA, GPIO_PIN_10, GPIOB, GPIO_PIN_5,  GPIOB, GPIO_PIN_4,  GPIOB, GPIO_PIN_10, GPIOA, GPIO_PIN_8,  false },
-    /* A4 */ { GPIOC, GPIO_PIN_6,  GPIOC, GPIO_PIN_5,  GPIOC, GPIO_PIN_8,  GPIOC, GPIO_PIN_9,  GPIOB, GPIO_PIN_8,  false },
+    /* A1 */ { GPIOC, GPIO_PIN_6,  GPIOC, GPIO_PIN_7,  GPIOC, GPIO_PIN_8,  GPIOA, GPIO_PIN_4,  GPIOA, GPIO_PIN_5,  false },
+    /* A2 */ { GPIOC, GPIO_PIN_9,  GPIOA, GPIO_PIN_8,  GPIOA, GPIO_PIN_9,  GPIOA, GPIO_PIN_6,  GPIOA, GPIO_PIN_7,  false },
+    /* A3 */ { GPIOA, GPIO_PIN_10, GPIOA, GPIO_PIN_11, GPIOA, GPIO_PIN_12, GPIOC, GPIO_PIN_4,  GPIOC, GPIO_PIN_5,  false },
+    /* A4 */ { GPIOC, GPIO_PIN_10, GPIOC, GPIO_PIN_11, GPIOC, GPIO_PIN_12, GPIOB, GPIO_PIN_0,  GPIOB, GPIO_PIN_1,  false },
 };
 
 typedef struct {

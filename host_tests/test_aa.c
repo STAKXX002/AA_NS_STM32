@@ -23,11 +23,11 @@ static UART_HandleTypeDef huart_fake = { (void*)1 };
 static TIM_HandleTypeDef  htim_fake  = { (void*)2 };
 
 typedef struct { GPIO_TypeDef *p; uint16_t pin; } PinRef;
-static const PinRef STEP_PIN[NUM_AXES] = { {GPIOA,GPIO_PIN_0},  {GPIOA,GPIO_PIN_9},  {GPIOA,GPIO_PIN_10}, {GPIOC,GPIO_PIN_6} };
-static const PinRef DIR_PIN [NUM_AXES] = { {GPIOA,GPIO_PIN_1},  {GPIOC,GPIO_PIN_7},  {GPIOB,GPIO_PIN_5},  {GPIOC,GPIO_PIN_5} };
-static const PinRef EN_PIN  [NUM_AXES] = { {GPIOA,GPIO_PIN_4},  {GPIOB,GPIO_PIN_6},  {GPIOB,GPIO_PIN_4},  {GPIOC,GPIO_PIN_8} };
-static const PinRef MIN_PIN [NUM_AXES] = { {GPIOB,GPIO_PIN_0},  {GPIOA,GPIO_PIN_7},  {GPIOB,GPIO_PIN_10}, {GPIOC,GPIO_PIN_9} };
-static const PinRef MAX_PIN [NUM_AXES] = { {GPIOC,GPIO_PIN_1},  {GPIOA,GPIO_PIN_6},  {GPIOA,GPIO_PIN_8},  {GPIOB,GPIO_PIN_8} };
+static const PinRef STEP_PIN[NUM_AXES] = { {GPIOC,GPIO_PIN_6}, {GPIOC,GPIO_PIN_9}, {GPIOA,GPIO_PIN_10}, {GPIOC,GPIO_PIN_10} };
+static const PinRef DIR_PIN [NUM_AXES] = { {GPIOC,GPIO_PIN_7}, {GPIOA,GPIO_PIN_8}, {GPIOA,GPIO_PIN_11}, {GPIOC,GPIO_PIN_11} };
+static const PinRef EN_PIN  [NUM_AXES] = { {GPIOC,GPIO_PIN_8}, {GPIOA,GPIO_PIN_9}, {GPIOA,GPIO_PIN_12}, {GPIOC,GPIO_PIN_12} };
+static const PinRef MIN_PIN [NUM_AXES] = { {GPIOA,GPIO_PIN_4}, {GPIOA,GPIO_PIN_6}, {GPIOC,GPIO_PIN_4}, {GPIOB,GPIO_PIN_0} };
+static const PinRef MAX_PIN [NUM_AXES] = { {GPIOA,GPIO_PIN_5}, {GPIOA,GPIO_PIN_7}, {GPIOC,GPIO_PIN_5}, {GPIOB,GPIO_PIN_1} };
 
 /* physical model */
 static long phys[NUM_AXES];            /* real screw position, steps (can differ from firmware pos) */
