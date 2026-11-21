@@ -139,6 +139,16 @@ void alignment_print_status(void) {
 /* ---- per-axis state machine ---- */
 
 static void update_axis(int i, uint32_t now) {
+    /* One snapshot per pass, taken in this order: the facts first (done and
+     * the two debounced switch flags), the stop latch LAST. The tick ISR
+     * updates the flags, then halts the axis (target = pos) and latches the
+     * reason, all in one go. So whatever the interleaving, a halt that shows
+     * up in the facts is already visible in the latch, and a MAX/MIN hit is
+     * never reported as DONE, SWITCH ACTIVE or MIN NOT FOUND. Every branch
+     * below must use these copies, not call the accessors again. */
+    bool done = axis_done(i);
+    bool minA = axis_min_active(i);
+    bool maxA = axis_max_active(i);
     AxisStop stop = axis_stop_reason(i);
     uint32_t elapsed = now - stateStart[i];
     char b[16];
@@ -152,7 +162,7 @@ static void update_axis(int i, uint32_t now) {
             axis_move_to(i, axis_pos(i) + BACKOFF_STEPS);
             st[i] = AX_HOME_BACKOFF;
             stateStart[i] = now;
-        } else if (axis_max_active(i)) {
+        } else if (maxA) {
             /* Heading for MIN but MAX tripped: motor direction is reversed
              * (see dir_invert in axis.c) or the switches are swapped. The ISR
              * only guards the switch in the direction of travel, so this is
@@ -160,18 +170,18 @@ static void update_axis(int i, uint32_t now) {
             fault_axis(i, "MAX HIT WHILE HOMING");
         } else if (elapsed > HOME_TIMEOUT_MS) {
             fault_axis(i, "HOME TIMEOUT");
-        } else if (axis_done(i)) {
+        } else if (done) {
             fault_axis(i, "MIN NOT FOUND");   /* travelled SEARCH_MM, no switch */
         }
         break;
 
     case AX_HOME_BACKOFF:
-        if (stop == STOP_MAX || axis_max_active(i)) {
+        if (stop == STOP_MAX || maxA) {
             fault_axis(i, "MAX HIT WHILE HOMING");
         } else if (elapsed > BACKOFF_TIMEOUT_MS) {
             fault_axis(i, "BACKOFF TIMEOUT");
-        } else if (axis_done(i)) {
-            if (axis_min_active(i)) { fault_axis(i, "MIN STUCK"); break; }
+        } else if (done) {
+            if (minA) { fault_axis(i, "MIN STUCK"); break; }
             axis_set_zero(i);
             axis_clear_stop(i);
             if (measuring[i]) {
@@ -193,11 +203,11 @@ static void update_axis(int i, uint32_t now) {
             axis_move_to(i, calMaxPos[i] - BACKOFF_STEPS);
             st[i] = AX_CAL_BACKOFF;
             stateStart[i] = now;
-        } else if (axis_min_active(i)) {
+        } else if (minA) {
             fault_axis(i, "MIN HIT DURING CAL");   /* MIN pressed while heading for MAX */
         } else if (elapsed > CAL_TIMEOUT_MS) {
             fault_axis(i, "CAL TIMEOUT");
-        } else if (axis_done(i)) {
+        } else if (done) {
             fault_axis(i, "MAX NOT FOUND");
         }
         break;
@@ -205,8 +215,8 @@ static void update_axis(int i, uint32_t now) {
     case AX_CAL_BACKOFF:
         if (elapsed > BACKOFF_TIMEOUT_MS) {
             fault_axis(i, "BACKOFF TIMEOUT");
-        } else if (axis_done(i)) {
-            if (axis_max_active(i)) { fault_axis(i, "MAX STUCK"); break; }
+        } else if (done) {
+            if (maxA) { fault_axis(i, "MAX STUCK"); break; }
             travel[i] = axis_pos(i);          /* usable travel keeps BACKOFF_MM margin at MAX */
             measuring[i] = false;
             st[i] = AX_READY;
@@ -220,14 +230,14 @@ static void update_axis(int i, uint32_t now) {
          * steps, wrong travel setting, mechanical slip) - never "success". */
         if (stop == STOP_MIN)      { fault_axis(i, "MIN HIT"); }
         else if (stop == STOP_MAX) { fault_axis(i, "MAX HIT"); }
-        else if (axis_min_active(i) || axis_max_active(i)) {
+        else if (minA || maxA) {
             /* A move stays inside [0, travel], where both switches are
              * released. A pressed switch (debounced) means the position is
              * wrong or the axis is going the wrong way. */
             fault_axis(i, "SWITCH ACTIVE");
         }
         else if (elapsed > MOVE_TIMEOUT_MS) { fault_axis(i, "MOVE TIMEOUT"); }
-        else if (axis_done(i)) {
+        else if (done) {
             st[i] = AX_READY;
             fmt_mm(b, sizeof(b), axis_pos(i));
             printf("A%d DONE %s\r\n", i + 1, b);
