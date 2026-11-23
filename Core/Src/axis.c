@@ -3,17 +3,28 @@
 #include <stddef.h>
 
 /* ---------------------------------------------------------------------
- * Pin table - grouped so each axis lands on ONE Nucleo connector:
- *   A1 -> CN8  analog header A0..A4
- *   A2 -> CN5  digital header D8..D12
- *   A3 -> CN9  digital header D2, D4..D7   (D3 = PB3/SWO left empty)
- *   A4 -> CN10 morpho, top block (pins 1-6; PB9 left spare)
- * Within each axis: STEP, DIR, EN, MIN, MAX in connector order.
- * Spare (still free): PC0 (A5), PB9, PC2, PC3, PB1, PB2.
- * Avoid: PA2/PA3 (console), PA13/PA14 (SWD), PB3 (SWO), PC13 (button),
- * PA5 (LED), PB7 (light relay), PB12-PB15 (hatch).
- * Update this table when the PCB is redesigned - it is the only place the
- * pins are defined. Endstop polarity: see ENDSTOP_ACTIVE_LOW in aa_config.h.
+ * Pin table for the standalone STM32F446RET6 (LQFP64) on the *ADA_5 PCB.
+ * Grouped strictly by physical connector location on the board edges:
+ *
+ *   DRIVERS (12 pins) - West & South-West edges facing J1-J4:
+ *     A1 (J1, top-west):      STEP PC10 (pin 51), DIR PC11 (pin 52), EN PC12 (pin 53)
+ *     A2 (J2, upper-west):    STEP PC0  (pin 8),  DIR PC1  (pin 9),  EN PC2  (pin 10)
+ *     A3 (J3, lower-west):    STEP PA4  (pin 20), DIR PA5  (pin 21), EN PA6  (pin 22)
+ *     A4 (J4, bottom-west):   STEP PA7  (pin 23), DIR PC4  (pin 24), EN PC5  (pin 25)
+ *
+ *   ENDSTOPS (8 pins) - East edge facing J5 (8-pin vertical header):
+ *     Pins 33-40: PB12 A1 MIN, PB13 A1 MAX, PB14 A2 MIN, PB15 A2 MAX,
+ *                 PC6  A3 MIN, PC7  A3 MAX, PC8  A4 MIN, PC9  A4 MAX
+ *     (Distinct EXTI lines 12, 13, 14, 15, 6, 7, 8, 9 - zero EXTI collisions)
+ *
+ *   HATCH / L298N (J7, top edge): PB4, PB5, PB6, PB8
+ *   RELAY LIGHT   (J7, top edge): PB7 (active low)
+ *   CONSOLE UART  (J10, top edge): PA2 (TX), PA3 (RX)
+ *   SWD DEBUG     (J11, top edge): PA13 (SWDIO), PA14 (SWCLK), NRST (pin 7)
+ *   OSCILLATOR    (crystal Y1):   PH0 (OSC_IN), PH1 (OSC_OUT)
+ *
+ * Update this table when the PCB is redesigned - it is the single source
+ * of truth in firmware. Endstop polarity: see ENDSTOP_ACTIVE_LOW in aa_config.h.
  * ------------------------------------------------------------------- */
 typedef struct {
     GPIO_TypeDef *step_port; uint16_t step_pin;
@@ -25,11 +36,11 @@ typedef struct {
 } AxisHw;
 
 static const AxisHw hw[NUM_AXES] = {
-    /*          STEP              DIR               EN                MIN                MAX            */
-    /* A1 */ { GPIOA, GPIO_PIN_0,  GPIOA, GPIO_PIN_1,  GPIOA, GPIO_PIN_4,  GPIOB, GPIO_PIN_0,  GPIOC, GPIO_PIN_1,  false },
-    /* A2 */ { GPIOA, GPIO_PIN_9,  GPIOC, GPIO_PIN_7,  GPIOB, GPIO_PIN_6,  GPIOA, GPIO_PIN_7,  GPIOA, GPIO_PIN_6,  false },
-    /* A3 */ { GPIOA, GPIO_PIN_10, GPIOB, GPIO_PIN_5,  GPIOB, GPIO_PIN_4,  GPIOB, GPIO_PIN_10, GPIOA, GPIO_PIN_8,  false },
-    /* A4 */ { GPIOC, GPIO_PIN_6,  GPIOC, GPIO_PIN_5,  GPIOC, GPIO_PIN_8,  GPIOC, GPIO_PIN_9,  GPIOB, GPIO_PIN_8,  false },
+    /*          STEP               DIR                EN                 MIN                MAX            */
+    /* A1 */ { GPIOC, GPIO_PIN_10, GPIOC, GPIO_PIN_11, GPIOC, GPIO_PIN_12, GPIOB, GPIO_PIN_12, GPIOB, GPIO_PIN_13, false },
+    /* A2 */ { GPIOC, GPIO_PIN_0,  GPIOC, GPIO_PIN_1,  GPIOC, GPIO_PIN_2,  GPIOB, GPIO_PIN_14, GPIOB, GPIO_PIN_15, false },
+    /* A3 */ { GPIOA, GPIO_PIN_4,  GPIOA, GPIO_PIN_5,  GPIOA, GPIO_PIN_6,  GPIOC, GPIO_PIN_6,  GPIOC, GPIO_PIN_7,  false },
+    /* A4 */ { GPIOA, GPIO_PIN_7,  GPIOC, GPIO_PIN_4,  GPIOC, GPIO_PIN_5,  GPIOC, GPIO_PIN_8,  GPIOC, GPIO_PIN_9,  false },
 };
 
 typedef struct {
