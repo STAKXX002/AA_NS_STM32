@@ -1,4 +1,4 @@
-# AA_STM - Active Alignment firmware (STM32F446RE Nucleo)
+# AA_STM - Active Alignment firmware (STM32F446RET6 LQFP64 / *ADA_5 PCB)
 
 Four independent lead-screw actuators, each with a STEP/DIR/EN driver and MIN/MAX endstops.
 Forked from `AA_NS_STM_PORT` (Swapping system): the hatch and light relay modules are kept,

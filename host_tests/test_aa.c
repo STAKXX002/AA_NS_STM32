@@ -8,6 +8,7 @@
 #include "main.h"
 #include "aa_config.h"
 #include "alignment.h"
+#include "axis.h"
 #include "commands.h"
 #include "hatch.h"
 #include "relay.h"
@@ -23,11 +24,11 @@ static UART_HandleTypeDef huart_fake = { (void*)1 };
 static TIM_HandleTypeDef  htim_fake  = { (void*)2 };
 
 typedef struct { GPIO_TypeDef *p; uint16_t pin; } PinRef;
-static const PinRef STEP_PIN[NUM_AXES] = { {GPIOA,GPIO_PIN_0},  {GPIOA,GPIO_PIN_9},  {GPIOA,GPIO_PIN_10}, {GPIOC,GPIO_PIN_6} };
-static const PinRef DIR_PIN [NUM_AXES] = { {GPIOA,GPIO_PIN_1},  {GPIOC,GPIO_PIN_7},  {GPIOB,GPIO_PIN_5},  {GPIOC,GPIO_PIN_5} };
-static const PinRef EN_PIN  [NUM_AXES] = { {GPIOA,GPIO_PIN_4},  {GPIOB,GPIO_PIN_6},  {GPIOB,GPIO_PIN_4},  {GPIOC,GPIO_PIN_8} };
-static const PinRef MIN_PIN [NUM_AXES] = { {GPIOB,GPIO_PIN_0},  {GPIOA,GPIO_PIN_7},  {GPIOB,GPIO_PIN_10}, {GPIOC,GPIO_PIN_9} };
-static const PinRef MAX_PIN [NUM_AXES] = { {GPIOC,GPIO_PIN_1},  {GPIOA,GPIO_PIN_6},  {GPIOA,GPIO_PIN_8},  {GPIOB,GPIO_PIN_8} };
+static const PinRef STEP_PIN[NUM_AXES] = { {GPIOC,GPIO_PIN_10}, {GPIOC,GPIO_PIN_0}, {GPIOA,GPIO_PIN_4}, {GPIOA,GPIO_PIN_7} };
+static const PinRef DIR_PIN  [NUM_AXES] = { {GPIOC,GPIO_PIN_11}, {GPIOC,GPIO_PIN_1}, {GPIOA,GPIO_PIN_5}, {GPIOC,GPIO_PIN_4} };
+static const PinRef EN_PIN   [NUM_AXES] = { {GPIOC,GPIO_PIN_12}, {GPIOC,GPIO_PIN_2}, {GPIOA,GPIO_PIN_6}, {GPIOC,GPIO_PIN_5} };
+static const PinRef MIN_PIN  [NUM_AXES] = { {GPIOB,GPIO_PIN_12}, {GPIOB,GPIO_PIN_14}, {GPIOC,GPIO_PIN_6}, {GPIOC,GPIO_PIN_8} };
+static const PinRef MAX_PIN  [NUM_AXES] = { {GPIOB,GPIO_PIN_13}, {GPIOB,GPIO_PIN_15}, {GPIOC,GPIO_PIN_7}, {GPIOC,GPIO_PIN_9} };
 
 /* physical model */
 static long phys[NUM_AXES];            /* real screw position, steps (can differ from firmware pos) */
@@ -52,6 +53,22 @@ void HAL_GPIO_WritePin(GPIO_TypeDef *p, uint16_t pin, GPIO_PinState s) {
     }
 }
 int HAL_UART_Receive_IT(UART_HandleTypeDef *h, uint8_t *buf, uint16_t n) { (void)h; (void)n; uart_rx_ptr = buf; return 0; }
+
+/* Interrupt injection. alignment.c reads the axis through four accessors;
+ * the tick ISR can land between any two of those calls. isr_at selects the
+ * gap (counted over every call boundary since isr_pts was zeroed); -1 = off. */
+bool __real_axis_done(int i);
+AxisStop __real_axis_stop_reason(int i);
+bool __real_axis_min_active(int i);
+bool __real_axis_max_active(int i);
+static int isr_at = -1, isr_pts;
+static void isr_point(void) {
+    if (isr_at >= 0 && isr_pts++ == isr_at) { HAL_TIM_PeriodElapsedCallback(&htim_fake); tick_count++; }
+}
+bool __wrap_axis_done(int i)       { isr_point(); bool r = __real_axis_done(i);        isr_point(); return r; }
+AxisStop __wrap_axis_stop_reason(int i) { isr_point(); AxisStop r = __real_axis_stop_reason(i); isr_point(); return r; }
+bool __wrap_axis_min_active(int i) { isr_point(); bool r = __real_axis_min_active(i);  isr_point(); return r; }
+bool __wrap_axis_max_active(int i) { isr_point(); bool r = __real_axis_max_active(i);  isr_point(); return r; }
 
 static bool en_disabled(int i) { return (EN_PIN[i].p->ODR & EN_PIN[i].pin) != 0; }
 
@@ -321,6 +338,42 @@ static void t_switch_during_move(void) {
     SEEN("A1 SWITCH ACTIVE");
 }
 
+/* The tick ISR can land between two reads inside update_axis. Whatever the
+ * interleaving, the verdict must be the same: a MAX press during a move is
+ * "MAX HIT" (never DONE, never SWITCH ACTIVE), and a MIN press while homing
+ * is "MIN HIT" (never MIN NOT FOUND). The debounce is left one tick short so
+ * the injected tick is the one that completes it and halts the axis. */
+static void t_isr_between_reads(void) {
+    for (int at = 0; at < 40; at++) {
+        fresh(100, 10);
+        home_and_wait(1);
+        send("MOVE 1 30");
+        run_ms(50);
+        max_trig[0] = phys[0]; set_switch(MAX_PIN[0], true);
+        for (int k = 0; k < ENDSTOP_DEBOUNCE_TICKS - 1; k++) { HAL_TIM_PeriodElapsedCallback(&htim_fake); tick_count++; }
+        new_mark();
+        isr_pts = 0; isr_at = at;
+        alignment_update(HAL_GetTick());
+        isr_at = -1;
+        run_ms(20);
+        CHECK(seen("FAULT: A1 MAX HIT"), "MOVE, isr gap %d: want MAX HIT, got:\n%s", at, out_since_mark());
+    }
+    for (int at = 0; at < 40; at++) {
+        fresh(100, 10);
+        send("HOME 1");
+        run_ms(50);
+        glitch_ticks[0] = 100000; set_switch(MIN_PIN[0], true);
+        for (int k = 0; k < ENDSTOP_DEBOUNCE_TICKS - 1; k++) { HAL_TIM_PeriodElapsedCallback(&htim_fake); tick_count++; }
+        new_mark();
+        isr_pts = 0; isr_at = at;
+        alignment_update(HAL_GetTick());
+        isr_at = -1;
+        run_ms(3);
+        CHECK(seen("A1 MIN HIT"), "HOME, isr gap %d: want MIN HIT, got:\n%s", at, out_since_mark());
+        NOT_SEEN("MIN NOT FOUND");
+    }
+}
+
 int main(void) {
     FILE *m = open_memstream(&outbuf, &outlen);
     FILE *real_stdout = stdout;
@@ -333,6 +386,7 @@ int main(void) {
         {"fault_stops_all", t_fault_stops_all}, {"debounce", t_debounce},
         {"hatch_interlock", t_hatch_interlock}, {"stop_and_rst", t_stop_and_rst}, {"commands", t_commands},
         {"reversed_direction", t_reversed_direction}, {"switch_during_move", t_switch_during_move},
+        {"isr_between_reads", t_isr_between_reads},
     };
     int n = sizeof tests / sizeof tests[0], failed_tests = 0;
     for (int i = 0; i < n; i++) {

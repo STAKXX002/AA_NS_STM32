@@ -14,6 +14,10 @@ done
 cp host_tests/stubs/main.h build/host/inc/
 for c in axis alignment commands hatch relay system; do cp Core/Src/$c.c build/host/src/; done
 cp host_tests/test_aa.c build/host/src/
+# --wrap lets test_aa.c run the tick ISR between two accessor calls made by
+# alignment.c (see t_isr_between_reads), the way a real interrupt can land.
 gcc -std=gnu11 -O1 -g -Wall -Wextra -Wno-unused-parameter \
-    -Ibuild/host/inc build/host/src/*.c -o build/host/test_aa
+    -Ibuild/host/inc build/host/src/*.c -o build/host/test_aa \
+    -Wl,--wrap=axis_done -Wl,--wrap=axis_stop_reason \
+    -Wl,--wrap=axis_min_active -Wl,--wrap=axis_max_active
 ./build/host/test_aa

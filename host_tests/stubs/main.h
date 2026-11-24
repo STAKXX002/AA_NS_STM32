@@ -66,13 +66,13 @@ static inline void __set_PRIMASK(uint32_t v) { (void)v; }
 
 #define RELAY_LIGHT_Pin GPIO_PIN_7
 #define RELAY_LIGHT_GPIO_Port GPIOB
-#define GRIP_IN1_Pin GPIO_PIN_12
+#define GRIP_IN1_Pin GPIO_PIN_4
 #define GRIP_IN1_GPIO_Port GPIOB
-#define GRIP_IN2_Pin GPIO_PIN_13
+#define GRIP_IN2_Pin GPIO_PIN_5
 #define GRIP_IN2_GPIO_Port GPIOB
-#define GRIP_IN3_Pin GPIO_PIN_14
+#define GRIP_IN3_Pin GPIO_PIN_6
 #define GRIP_IN3_GPIO_Port GPIOB
-#define GRIP_IN4_Pin GPIO_PIN_15
+#define GRIP_IN4_Pin GPIO_PIN_8
 #define GRIP_IN4_GPIO_Port GPIOB
 
 #endif
