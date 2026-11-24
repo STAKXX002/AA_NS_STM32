@@ -64,7 +64,7 @@ static inline uint32_t __get_PRIMASK(void) { return 0; }
 static inline void __disable_irq(void) {}
 static inline void __set_PRIMASK(uint32_t v) { (void)v; }
 
-#define RELAY_LIGHT_Pin GPIO_PIN_7
+#define RELAY_LIGHT_Pin GPIO_PIN_8
 #define RELAY_LIGHT_GPIO_Port GPIOB
 #define GRIP_IN1_Pin GPIO_PIN_4
 #define GRIP_IN1_GPIO_Port GPIOB
@@ -72,7 +72,7 @@ static inline void __set_PRIMASK(uint32_t v) { (void)v; }
 #define GRIP_IN2_GPIO_Port GPIOB
 #define GRIP_IN3_Pin GPIO_PIN_6
 #define GRIP_IN3_GPIO_Port GPIOB
-#define GRIP_IN4_Pin GPIO_PIN_8
+#define GRIP_IN4_Pin GPIO_PIN_7
 #define GRIP_IN4_GPIO_Port GPIOB
 
 #endif

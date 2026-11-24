@@ -17,8 +17,8 @@
  *                 PC6  A3 MIN, PC7  A3 MAX, PC8  A4 MIN, PC9  A4 MAX
  *     (Distinct EXTI lines 12, 13, 14, 15, 6, 7, 8, 9 - zero EXTI collisions)
  *
- *   HATCH / L298N (J7, top edge): PB4, PB5, PB6, PB8
- *   RELAY LIGHT   (J7, top edge): PB7 (active low)
+ *   HATCH / L298N (J7, top edge): PB4, PB5, PB6, PB7
+ *   RELAY LIGHT   (J7, top edge): PB8 (active low)
  *   CONSOLE UART  (J10, top edge): PA2 (TX), PA3 (RX)
  *   SWD DEBUG     (J11, top edge): PA13 (SWDIO), PA14 (SWCLK), NRST (pin 7)
  *   OSCILLATOR    (crystal Y1):   PH0 (OSC_IN), PH1 (OSC_OUT)

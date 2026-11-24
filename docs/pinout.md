@@ -102,9 +102,9 @@ The pin assignment is strictly oriented to match the physical placement of perip
 | 56 | PB4 | `GRIP_IN1` | J7 (Pin 1) | Out | FT | Hatch H-bridge IN1 (push actuator) |
 | 57 | PB5 | `GRIP_IN2` | J7 (Pin 2) | Out | FT | Hatch H-bridge IN2 (retract actuator) |
 | 58 | PB6 | `GRIP_IN3` | J7 (Pin 3) | Out | FT | Hatch H-bridge IN3 |
-| 59 | PB7 | `RELAY_LIGHT` | J7 (Pin 5) / K1 | Out | FT | Illumination relay control (Active low, boot high) |
+| 59 | PB7 | `GRIP_IN4` | J7 (Pin 4) | Out | FT | Hatch H-bridge IN4 |
 | 60 | BOOT0 | BOOT0 | Internal | In | - | Boot configuration pin (10k pull-down to GND) |
-| 61 | PB8 | `GRIP_IN4` | J7 (Pin 4) | Out | FT | Hatch H-bridge IN4 |
+| 61 | PB8 | `RELAY_LIGHT` | J7 (Pin 5) / K1 | Out | FT | Illumination relay control (Active low, boot high) |
 | 62 | PB9 | `L298N_EN` | J7 (Pin 6) | Out | FT | Hatch driver enable / Spare output |
 | 63 | VSS | GND | Power | Power | - | Core ground |
 | 64 | VDD | +3V3 | Power | Power | - | Digital 3.3V supply (100nF bypass) |
@@ -163,8 +163,8 @@ The pin assignment is strictly oriented to match the physical placement of perip
 | 1 | `GRIP_IN1`    | PB4 | Pin 56 | H-Bridge Push Actuator |
 | 2 | `GRIP_IN2`    | PB5 | Pin 57 | H-Bridge Retract Actuator |
 | 3 | `GRIP_IN3`    | PB6 | Pin 58 | H-Bridge Polar Control |
-| 4 | `GRIP_IN4`    | PB8 | Pin 61 | H-Bridge Polar Control |
-| 5 | `RELAY_LIGHT` | PB7 | Pin 59 | Active-Low Light Relay |
+| 4 | `GRIP_IN4`    | PB7 | Pin 59 | H-Bridge Polar Control |
+| 5 | `RELAY_LIGHT` | PB8 | Pin 61 | Active-Low Light Relay |
 | 6 | `L298N_EN`    | PB9 | Pin 62 | Driver Enable / PWM |
 
 ### J10: STM_Interface UART Header (3 pins, North-East)

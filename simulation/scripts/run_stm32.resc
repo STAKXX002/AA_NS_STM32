@@ -26,8 +26,8 @@ sysbus.gpioPortC OnGPIO 7 true
 sysbus.gpioPortC OnGPIO 8 true
 sysbus.gpioPortC OnGPIO 9 true
 
-# Light relay (PB7) HIGH on boot (inactive state for an active-LOW relay)
-sysbus.gpioPortB OnGPIO 7 true
+# Light relay (PB8) HIGH on boot (inactive state for an active-LOW relay)
+sysbus.gpioPortB OnGPIO 8 true
 
 # Setup socket server for UART2 communication with the Python script
 emulation CreateServerSocketTerminal 1234 "uart_terminal"
