@@ -111,63 +111,115 @@ Before connecting the STM32, verify the Raspberry Pi's own UART hardware and dri
 
 ## 5. Running `serial_test.py`
 
-### Mode 1: Single Ping Verification
-Sends `PING` to the STM32 and measures the round-trip latency.
+### Safety Guard Policy
+The STM32 firmware has no `PING` or `STATUS` command. All actuator motion and relay control commands are guarded and blocked by default:
+- **Unguarded commands (safe by default):** `POS` (read-only query), `STOP` (emergency halt), `HALT` (axis decelerate), `RST` (fault reset).
+- **Guarded commands (require `--allow-motion`):** `HOME`, `CAL`, `MOVE`, `OPEN`, `CLOSE`, `ON` (illumination relay), `OFF` (illumination relay).
+
+---
+
+### Mode 1: Single Ping Verification (`ping`)
+Sends `POS` (safe read-only query) to the STM32. Success requires the full reply to match four valid axis lines (`A1`..`A4`):
+```text
+A<n> <STATE> POS <f> TRAVEL <f> MIN <0|1> MAX <0|1>
+```
+Anything else, including `UNKNOWN`, incomplete lines, or framing/baud garbage, counts as failure and prints the raw received bytes in hex.
+
 ```bash
 python3 tools/pi/serial_test.py --port /dev/serial0 ping
 ```
-**Expected Output:**
+**Expected Output (Success):**
 ```text
-PING OK: reply='UNKNOWN', latency=2.45 ms
-```
-*(Note: Because `PING` is an unmapped command in the firmware command table, the STM32 responds with `UNKNOWN\r\n`. Receiving `UNKNOWN\r\n` confirms two-way communication).*
-
-### Mode 2: System Status Query
-Queries the STM32 and retrieves axis state and limit switch readings:
-```bash
-python3 tools/pi/serial_test.py --port /dev/serial0 status
-```
-**Expected Output:**
-```text
---- STM32 Status ---
-STATUS reply: UNKNOWN
-Axis Positions (POS):
+PING OK: 4 axes verified (POS), latency=2.45 ms
   A1 UNHOMED POS 0.000 TRAVEL 0.000 MIN 0 MAX 0
   A2 UNHOMED POS 0.000 TRAVEL 0.000 MIN 0 MAX 0
   A3 UNHOMED POS 0.000 TRAVEL 0.000 MIN 0 MAX 0
   A4 UNHOMED POS 0.000 TRAVEL 0.000 MIN 0 MAX 0
 ```
 
-### Mode 3: Round-Trip Latency & Packet Loss Benchmark
-Executes $N$ continuous round-trip ping cycles to detect dropped frames or signal noise:
+**Expected Output (Failure with Hex Dump on Framing / Error):**
+```text
+PING FAILED: Line 1 invalid format: 'UNKNOWN'
+  Raw received (hex): 55 4E 4B 4E 4F 57 4E 0D 0A
+  Decoded text: ['UNKNOWN']
+```
+
+---
+
+### Mode 2: Parser Check (`probe`)
+Sends the unmapped token `PING` to test the STM32 command parser alone. The parser must reply with exactly `UNKNOWN\r\n`.
+*(Labelled as a parser check, not a status check).*
+
+```bash
+python3 tools/pi/serial_test.py --port /dev/serial0 probe
+```
+**Expected Output:**
+```text
+PARSER CHECK OK: MCU command parser replied 'UNKNOWN', latency=2.15 ms
+```
+
+---
+
+### Mode 3: System Status Query (`status`)
+Sends `POS` and prints a structured tabular report of all axes and switch states:
+
+```bash
+python3 tools/pi/serial_test.py --port /dev/serial0 status
+```
+**Expected Output:**
+```text
+--- STM32 Axis Status (POS) ---
+Axis   State      Pos (mm)     Travel (mm)  Min Sw   Max Sw  
+-----------------------------------------------------------
+A1     UNHOMED    0.000        0.000        0        0       
+A2     UNHOMED    0.000        0.000        0        0       
+A3     UNHOMED    0.000        0.000        0        0       
+A4     UNHOMED    0.000        0.000        0        0       
+```
+
+---
+
+### Mode 4: Round-Trip Latency & Packet Loss Benchmark (`loop [N]`)
+Executes $N$ continuous `POS` round-trips with strict 4-line response validation. Dropped frames or corrupt lines are reported with hex dumps:
+
 ```bash
 python3 tools/pi/serial_test.py --port /dev/serial0 loop 20
 ```
 **Expected Output:**
 ```text
---- Starting 20 PING round-trips to STM32 (/dev/serial0 @ 115200 baud) ---
-[  1/20] Reply: 'UNKNOWN'  latency:   2.35 ms
-[  2/20] Reply: 'UNKNOWN'  latency:   2.18 ms
+--- Starting 20 POS round-trips to STM32 (/dev/serial0 @ 115200 baud) ---
+[  1/20] OK: 4 axes verified (POS)  latency:   2.35 ms
+[  2/20] OK: 4 axes verified (POS)  latency:   2.18 ms
 ...
-[ 20/20] Reply: 'UNKNOWN'  latency:   2.25 ms
+[ 20/20] OK: 4 axes verified (POS)  latency:   2.25 ms
 
---- Ping Round-Trip Statistics ---
+--- Ping Round-Trip Statistics (POS) ---
 Packets: Sent = 20, Received = 20, Lost = 0 (0.0% loss)
 Latency: Min = 2.15 ms, Avg = 2.31 ms, Max = 2.68 ms
 ```
 
-### Mode 4: Interactive Serial Console
-Launches a command-line terminal to send manual commands (`POS`, `ON`, `OFF`, `RST`, `STOP`):
+---
+
+### Mode 5: Interactive Serial Console (`interactive`)
+Launches a command-line terminal to send arbitrary commands to the MCU:
 ```bash
 python3 tools/pi/serial_test.py --port /dev/serial0 interactive
 ```
-**Motion Guard Safety:**
-Physical movement commands (`HOME`, `CAL`, `MOVE`, `OPEN`, `CLOSE`) are blocked by default:
+**Safety Enforcement Example:**
+Actuation commands (`HOME`, `CAL`, `MOVE`, `OPEN`, `CLOSE`, `ON`, `OFF`) are blocked by default:
 ```text
-STM32> MOVE 1 5
-  [BLOCKED] Motion command 'MOVE 1 5' blocked by default safety policy. Pass --allow-motion to enable.
+STM32> ON
+  [BLOCKED] Command 'ON' blocked by default safety policy (motion/relay command). Pass --allow-motion to enable.
+STM32> MOVE A1 10
+  [BLOCKED] Command 'MOVE A1 10' blocked by default safety policy (motion/relay command). Pass --allow-motion to enable.
+STM32> POS
+  < A1 UNHOMED POS 0.000 TRAVEL 0.000 MIN 0 MAX 0
+  < A2 UNHOMED POS 0.000 TRAVEL 0.000 MIN 0 MAX 0
+  < A3 UNHOMED POS 0.000 TRAVEL 0.000 MIN 0 MAX 0
+  < A4 UNHOMED POS 0.000 TRAVEL 0.000 MIN 0 MAX 0
+  (round-trip: 2.4 ms | hex: 41 31 ...)
 ```
-To enable motion commands when hardware is ready:
+To enable motion/relay commands when the bench hardware is connected and ready:
 ```bash
 python3 tools/pi/serial_test.py --port /dev/serial0 --allow-motion interactive
 ```
@@ -182,7 +234,7 @@ python3 tools/pi/serial_test.py --port /dev/serial0 --allow-motion interactive
 | | Common ground missing | Connect STM32 GND to Pi Pin 6 (`GND`). Without a shared ground reference, floating potentials corrupt UART frames. |
 | | Serial port held by Linux login console | Run `sudo raspi-config` and disable serial login shell. Verify `console=serial0` is removed from `/boot/firmware/cmdline.txt`. |
 | | Firmware not running on STM32 | Verify STM32 power LED and ST-LINK connection. Flash `build/Debug/AA_STM.elf`. |
-| **Garbage / Corrupted characters** | Baud rate mismatch | Ensure `--baud 115200` is used. Check that the STM32 clock tree matches 180 MHz system clock. |
+| **Garbage / Corrupted characters** | Baud rate mismatch | Ensure `--baud 115200` is used. Check that the STM32 clock tree matches 180 MHz system clock. Raw hex output reveals baud mismatches. |
 | | Pi Mini UART frequency drift | Add `dtoverlay=disable-bt` to `/boot/firmware/config.txt` and reboot to lock hardware PL011 UART. |
 | **Only one direction working** | One jumper wire loose or damaged | Test jumpers with multimeter continuity check. Run loopback test on Pi (Pin 8 to 10). |
 | | MCU pin misconfiguration | Check that `__HAL_RCC_UART5_CLK_ENABLE()`, `GPIOC`, and `GPIOD` clocks are active and alternate function AF8 is set. |
