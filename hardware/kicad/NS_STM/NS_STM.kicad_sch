@@ -5218,14 +5218,6 @@
 		(uuid "8223c864-9840-48fc-a759-c1734c4fa855")
 	)
 	(no_connect
-		(at 105.41 87.63)
-		(uuid "8d329b98-0f84-4918-9f5d-94f18b06d88a")
-	)
-	(no_connect
-		(at 105.41 85.09)
-		(uuid "a7735590-e23b-4d9b-aa83-ef525741a0dd")
-	)
-	(no_connect
 		(at 64.77 95.25)
 		(uuid "ad2ebeb4-045f-415e-84bc-6d9c642c5104")
 	)
@@ -13281,6 +13273,181 @@
 		(uuid "8962782c-d21c-47a5-af7b-6f37a9b58488")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 271.38 119.38 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+	)
+	(global_label "PA9"
+		(shape input)
+		(at 105.41 87.63 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "71d81874-af56-432a-8a8d-bd7cab6f1caf")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 114.14 87.63 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+	)
+	(global_label "PA10"
+		(shape input)
+		(at 105.41 85.09 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "1416e9c1-3ce2-4c7a-b059-cf8f1abf3a40")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 114.14 85.09 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:Conn_01x02_Pin")
+		(at 254 134.62 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "a1509731-64d6-4845-ac43-affa6c9543f9")
+		(property "Reference" "J13"
+			(at 263.906 128.27 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "SPARE_USART1"
+			(at 263.906 130.81 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical"
+			(at 254 134.62 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 254 134.62 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Generic connector, single row, 01x02, script generated"
+			(at 254 134.62 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "77a2c90a-8f45-4c22-b0f1-0d527060bf14")
+		)
+		(pin "2"
+			(uuid "4271a509-bbaf-4379-afdb-75571b8654b3")
+		)
+		(instances
+			(project "NS_STM"
+				(path "/c5b61ccd-15bd-4e35-b86c-afa898cf4dbb"
+					(reference "J13")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(global_label "PA9"
+		(shape input)
+		(at 259.08 134.62 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "0198857c-9cf2-4b90-9196-f98e3a45af67")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 271.08 134.62 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+	)
+	(global_label "PA10"
+		(shape input)
+		(at 259.08 137.16 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "b071f26b-4aa9-4b07-8a34-dd4af92a23e5")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 271.38 137.16 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
