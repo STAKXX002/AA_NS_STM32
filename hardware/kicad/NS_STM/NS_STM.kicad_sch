@@ -13165,6 +13165,133 @@
 			)
 		)
 	)
+	(symbol
+		(lib_id "Connector:Conn_01x02_Pin")
+		(at 254 116.84 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "3fbdf091-9672-4922-ad09-681c30ccc87e")
+		(property "Reference" "JP1"
+			(at 263.906 110.49 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "BOOT0_JUMPER"
+			(at 263.906 113.03 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical"
+			(at 254 116.84 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 254 116.84 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "2-pin BOOT0 pull-up jumper header"
+			(at 254 116.84 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "5e40f322-aa08-43e0-9eab-978b3c16c7f3")
+		)
+		(pin "2"
+			(uuid "8db92943-01fb-416a-ba40-de48e92ce416")
+		)
+		(instances
+			(project "NS_STM"
+				(path "/c5b61ccd-15bd-4e35-b86c-afa898cf4dbb"
+					(reference "JP1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(global_label "BOOT0"
+		(shape input)
+		(at 259.08 116.84 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "9ba08dd5-2e0b-4402-a229-8ae7adfbb164")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 271.08 116.84 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+	)
+	(global_label "3.3V Regulated"
+		(shape input)
+		(at 259.08 119.38 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "8962782c-d21c-47a5-af7b-6f37a9b58488")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 271.38 119.38 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+	)
 	(sheet_instances
 		(path "/"
 			(page "1")
