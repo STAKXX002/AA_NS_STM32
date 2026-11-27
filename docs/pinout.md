@@ -79,11 +79,11 @@ The pin assignment is strictly oriented to match the physical placement of perip
 | 39 | PC8 | `A4_MIN` | J5 (Pin 7) | In | FT | Axis A4 minimum limit switch (Active low, pull-up) |
 | 40 | PC9 | `A4_MAX` | J5 (Pin 8) | In | FT | Axis A4 maximum limit switch (Active low, pull-up) |
 | 41 | PA8 | SPARE_PA8 | Internal / Test | I/O | FT | Spare general purpose I/O |
-| 42 | PA9 | SPARE_PA9 | Internal / Test | I/O | FT | Spare general purpose I/O (USART1_TX capable) |
-| 43 | PA10 | SPARE_PA10 | Internal / Test | I/O | FT | Spare general purpose I/O (USART1_RX capable) |
+| 42 | PA9 | `PA9` | J13 (Pin 1) | I/O | FT | Spare USART1 TX (AF07) / GPIO |
+| 43 | PA10 | `PA10` | J13 (Pin 2) | I/O | FT | Spare USART1 RX (AF07) / GPIO |
 | 44 | PA11 | SPARE_PA11 | Internal / Test | I/O | FT | Spare general purpose I/O |
 | 45 | PA12 | SPARE_PA12 | Internal / Test | I/O | FT | Spare general purpose I/O |
-| 46 | PA13 | `SYS_JTMS-SWDIO` | J11 (Pin 2) | I/O | FT | SWD data line (AF00) |
+| 46 | PA13 | `SYS_JTMS-SWDIO` | J11 (Pin 3) | I/O | FT | SWD data line (AF00) |
 | 47 | VSS | GND | Power | Power | - | Core ground |
 | 48 | VDD | +3V3 | Power | Power | - | Digital 3.3V supply (100nF bypass) |
 
@@ -92,18 +92,18 @@ The pin assignment is strictly oriented to match the physical placement of perip
 ### North Edge (Pins 49–64) — Faces J1 (A1 Driver), J10 (Pi UART), J11 (ST-LINK), and J7 (L298N)
 | Pin # | Pin Name | Signal / Net Name | Target Connector | Type | 5V Tol | Function / Description |
 |:-----:|:---------|:------------------|:-----------------|:----:|:------:|:-----------------------|
-| 49 | PA14 | `SYS_JTCK-SWCLK` | J11 (Pin 3) | In | FT | SWD clock line (AF00) |
+| 49 | PA14 | `SYS_JTCK-SWCLK` | J11 (Pin 4) | In | FT | SWD clock line (AF00) |
 | 50 | PA15 | `A1_EN` | J1 (Pin 1) | Out | FT | Axis A1 driver enable (active low, boot high) |
 | 51 | PC10 | `A1_STEP` | J1 (Pin 3) | Out | FT | Axis A1 step pulse (active high) |
 | 52 | PC11 | `A1_DIR` | J1 (Pin 2) | Out | FT | Axis A1 direction |
-| 53 | PC12 | `UART5_TX` | J10 (Pin 2) | Out | FT | Raspberry Pi serial TX (AF08) |
-| 54 | PD2 | `UART5_RX` | J10 (Pin 3) | In | FT | Raspberry Pi serial RX (AF08) |
-| 55 | PB3 | SPARE_PB3 | J11 (Pin 5) | I/O | FT | SWO / JTDO (trace debug) / Spare I/O |
+| 53 | PC12 | `PI_UART5_TX` | J10 (Pin 2) | Out | FT | Raspberry Pi serial TX (AF08) |
+| 54 | PD2 | `PI_UART5_RX` | J10 (Pin 3) | In | FT | Raspberry Pi serial RX (AF08) |
+| 55 | PB3 | SPARE_PB3 | Internal / Test | I/O | FT | SWO / JTDO (trace debug) / Spare I/O |
 | 56 | PB4 | `GRIP_IN1` | J7 (Pin 1) | Out | FT | Hatch H-bridge IN1 (push actuator) |
 | 57 | PB5 | `GRIP_IN2` | J7 (Pin 2) | Out | FT | Hatch H-bridge IN2 (retract actuator) |
 | 58 | PB6 | `GRIP_IN3` | J7 (Pin 3) | Out | FT | Hatch H-bridge IN3 |
 | 59 | PB7 | `GRIP_IN4` | J7 (Pin 4) | Out | FT | Hatch H-bridge IN4 |
-| 60 | BOOT0 | BOOT0 | Internal | In | - | Boot configuration pin (10k pull-down to GND) |
+| 60 | BOOT0 | `BOOT0` | JP1 (Pin 1) / R3 | In | - | Boot configuration pin (10k pull-down to GND) |
 | 61 | PB8 | `RELAY_LIGHT` | J7 (Pin 5) / K1 | Out | FT | Illumination relay control (Active low, boot high) |
 | 62 | PB9 | `L298N_EN` | J7 (Pin 6) | Out | FT | Hatch driver enable / Spare output |
 | 63 | VSS | GND | Power | Power | - | Core ground |
@@ -170,20 +170,41 @@ The pin assignment is strictly oriented to match the physical placement of perip
 ### J10: PI_STM_Interface UART Header (3 pins, North)
 | Pin # | Signal Name | MCU Pin | MCU Ball/Pad | Target Pi 4B Pin | Function |
 |:-----:|:------------|:-------:|:------------:|:----------------:|:---------|
-| 1 | GND         | GND  | Plane  | Physical Pin 6 (GND) | Ground reference |
-| 2 | `UART5_TX`  | PC12 | Pin 53 | Physical Pin 10 (RXD0 / GPIO15) | Serial Transmit (AF08) |
-| 3 | `UART5_RX`  | PD2  | Pin 54 | Physical Pin 8 (TXD0 / GPIO14) | Serial Receive (AF08) |
+| 1 | GND | GND | Plane | Physical Pin 6 (GND) | Ground reference |
+| 2 | `PI_UART5_TX` | PC12 | Pin 53 | Physical Pin 10 (RXD0 / GPIO15) | Serial Transmit (AF08) |
+| 3 | `PI_UART5_RX` | PD2 | Pin 54 | Physical Pin 8 (TXD0 / GPIO14) | Serial Receive (AF08) |
 
-*(USART2 remains available on PA2 Pin 16 / PA3 Pin 17 as an auxiliary PC debug console).*
+> **Crossover Cable Note:** Pin 2 (STM32 TX) connects to Raspberry Pi Pin 10 (RXD0); Pin 3 (STM32 RX) connects to Raspberry Pi Pin 8 (TXD0).
 
 ### J11: ST-LINK SWD Debug Header (5 pins, North)
 | Pin # | Signal Name | MCU Pin | MCU Ball/Pad | Function |
 |:-----:|:------------|:-------:|:------------:|:---------|
-| 1 | +3V3        | VDD  | Power  | Target Voltage Reference |
-| 2 | `SWDIO`     | PA13 | Pin 46 | Serial Wire Data (AF00) |
-| 3 | `SWCLK`     | PA14 | Pin 49 | Serial Wire Clock (AF00) |
-| 4 | GND         | GND  | Plane  | Ground |
-| 5 | `NRST`      | NRST | Pin 7  | Hardware Reset |
+| 1 | +3V3 | VDD | Power | Target Voltage Reference (3.3V) |
+| 2 | `NRST` | NRST | Pin 7 | Hardware Reset |
+| 3 | `SWDIO` | PA13 | Pin 46 | Serial Wire Data (AF00) |
+| 4 | `SWCLK` | PA14 | Pin 49 | Serial Wire Clock (AF00) |
+| 5 | GND | GND | Plane | Ground reference |
+
+### J12: USART2 Auxiliary Debug Console Header (3 pins, East)
+| Pin # | Signal Name | MCU Pin | MCU Ball/Pad | Function |
+|:-----:|:------------|:-------:|:------------:|:---------|
+| 1 | GND | GND | Plane | Ground reference |
+| 2 | `USART2_TX` | PA2 | Pin 16 | Console Transmit (AF07) |
+| 3 | `USART2_RX` | PA3 | Pin 17 | Console Receive (AF07) |
+
+### JP1: BOOT0 Jumper Header (2 pins, East)
+| Pin # | Signal Name | MCU Pin | Function |
+|:-----:|:------------|:-------:|:---------|
+| 1 | `BOOT0` | Pin 60 | STM32 Boot Mode Selection Pin |
+| 2 | +3V3 | VDD | 3.3V Regulated pull-up supply |
+
+> **Default State:** Open (unpopulated or unjumpered). R3 (10k pull-down to GND) keeps BOOT0 = 0 for standard Flash boot. Shorting JP1 forces BOOT0 = 1 for boot mode.
+
+### J13: SPARE_USART1 Header (2 pins, East)
+| Pin # | Signal Name | MCU Pin | MCU Ball/Pad | Function |
+|:-----:|:------------|:-------:|:------------:|:---------|
+| 1 | `PA9` | PA9 | Pin 42 | Spare USART1_TX (AF07) / GPIO |
+| 2 | `PA10` | PA10 | Pin 43 | Spare USART1_RX (AF07) / GPIO |
 
 ### Auxiliary / Expansion Headers
 - **`J8` (ALFA Driver / Spare, 4 pins, Bottom-West)**:
