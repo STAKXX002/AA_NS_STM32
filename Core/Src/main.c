@@ -52,6 +52,7 @@ IWDG_HandleTypeDef hiwdg;
 
 TIM_HandleTypeDef htim3;
 
+UART_HandleTypeDef huart5;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
@@ -66,6 +67,7 @@ static void MX_GPIO_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_IWDG_Init(void);
+static void MX_UART5_Init(void);
 /* USER CODE BEGIN PFP */
 /* (nothing needed here - relay.h/hatch.h/alignment.h/commands.h already
  * declare everything main.c calls) */
@@ -79,7 +81,12 @@ static void MX_IWDG_Init(void);
  * since that's generic C-runtime glue, not domain logic. */
 int _write(int file, char *ptr, int len) {
     (void)file;
-    HAL_UART_Transmit(&huart2, (uint8_t*)ptr, len, 100);
+    if (huart2.Instance != NULL) {
+        HAL_UART_Transmit(&huart2, (uint8_t*)ptr, len, 100);
+    }
+    if (huart5.Instance != NULL) {
+        HAL_UART_Transmit(&huart5, (uint8_t*)ptr, len, 100);
+    }
     return len;
 }
 /* USER CODE END 0 */
@@ -115,6 +122,7 @@ int main(void)
   MX_GPIO_Init();
   MX_TIM3_Init();
   MX_USART2_UART_Init();
+  MX_UART5_Init();
   /* USER CODE BEGIN 2 */
 #ifndef RENODE_BUILD
   /* Independent watchdog: a separate internal timer that resets the
@@ -139,6 +147,7 @@ int main(void)
   relay_init();      /* force light off - don't trust CubeMX's GPIO init level */
   alignment_init(&htim3); /* also configures the axis GPIO - see axis.c pin table */
   commands_init(&huart2);
+  commands_init_secondary(&huart5);
   HAL_TIM_Base_Start_IT(&htim3);
 
   printf("READY\r\nHOME REQUIRED\r\n");
@@ -300,6 +309,39 @@ static void MX_TIM3_Init(void)
 }
 
 /**
+  * @brief UART5 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_UART5_Init(void)
+{
+
+  /* USER CODE BEGIN UART5_Init 0 */
+
+  /* USER CODE END UART5_Init 0 */
+
+  /* USER CODE BEGIN UART5_Init 1 */
+
+  /* USER CODE END UART5_Init 1 */
+  huart5.Instance = UART5;
+  huart5.Init.BaudRate = 115200;
+  huart5.Init.WordLength = UART_WORDLENGTH_8B;
+  huart5.Init.StopBits = UART_STOPBITS_1;
+  huart5.Init.Parity = UART_PARITY_NONE;
+  huart5.Init.Mode = UART_MODE_TX_RX;
+  huart5.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart5.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart5) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN UART5_Init 2 */
+
+  /* USER CODE END UART5_Init 2 */
+
+}
+
+/**
   * @brief USART2 Initialization Function
   * @param None
   * @retval None
@@ -349,13 +391,14 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level : Stepper drivers initial state (STEP/DIR low, EN high = disabled) */
   HAL_GPIO_WritePin(GPIOC, A1_STEP_Pin|A1_DIR_Pin|A2_STEP_Pin|A2_DIR_Pin|A4_DIR_Pin, GPIO_PIN_RESET);
-  HAL_GPIO_WritePin(GPIOC, A1_EN_Pin|A2_EN_Pin|A4_EN_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOC, A2_EN_Pin|A4_EN_Pin, GPIO_PIN_SET);
 
   HAL_GPIO_WritePin(GPIOA, A3_STEP_Pin|A3_DIR_Pin|A4_STEP_Pin, GPIO_PIN_RESET);
-  HAL_GPIO_WritePin(GPIOA, A3_EN_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOA, A1_EN_Pin|A3_EN_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level : Hatch low, Light relay high (active low = off) */
   HAL_GPIO_WritePin(GPIOB, GRIP_IN1_Pin|GRIP_IN2_Pin|GRIP_IN3_Pin|GRIP_IN4_Pin, GPIO_PIN_RESET);
@@ -373,17 +416,17 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : A1_STEP_Pin A1_DIR_Pin A1_EN_Pin A2_STEP_Pin
+  /*Configure GPIO pins : A1_STEP_Pin A1_DIR_Pin A2_STEP_Pin
                            A2_DIR_Pin A2_EN_Pin A4_DIR_Pin A4_EN_Pin */
-  GPIO_InitStruct.Pin = A1_STEP_Pin|A1_DIR_Pin|A1_EN_Pin|A2_STEP_Pin
+  GPIO_InitStruct.Pin = A1_STEP_Pin|A1_DIR_Pin|A2_STEP_Pin
                           |A2_DIR_Pin|A2_EN_Pin|A4_DIR_Pin|A4_EN_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : A3_STEP_Pin A3_DIR_Pin A3_EN_Pin A4_STEP_Pin */
-  GPIO_InitStruct.Pin = A3_STEP_Pin|A3_DIR_Pin|A3_EN_Pin|A4_STEP_Pin;
+  /*Configure GPIO pins : A1_EN_Pin A3_STEP_Pin A3_DIR_Pin A3_EN_Pin A4_STEP_Pin */
+  GPIO_InitStruct.Pin = A1_EN_Pin|A3_STEP_Pin|A3_DIR_Pin|A3_EN_Pin|A4_STEP_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;

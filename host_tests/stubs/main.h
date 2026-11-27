@@ -46,6 +46,7 @@ GPIO_PinState HAL_GPIO_ReadPin(GPIO_TypeDef *p, uint16_t pin);
 #define __HAL_RCC_GPIOA_CLK_ENABLE() ((void)0)
 #define __HAL_RCC_GPIOB_CLK_ENABLE() ((void)0)
 #define __HAL_RCC_GPIOC_CLK_ENABLE() ((void)0)
+#define __HAL_RCC_GPIOD_CLK_ENABLE() ((void)0)
 
 typedef struct { void *Instance; } TIM_HandleTypeDef;
 typedef struct { void *Instance; } UART_HandleTypeDef;

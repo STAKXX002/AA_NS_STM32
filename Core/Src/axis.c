@@ -7,7 +7,7 @@
  * Grouped strictly by physical connector location on the board edges:
  *
  *   DRIVERS (12 pins) - West & South-West edges facing J1-J4:
- *     A1 (J1, top-west):      STEP PC10 (pin 51), DIR PC11 (pin 52), EN PC12 (pin 53)
+ *     A1 (J1, top-west):      STEP PC10 (pin 51), DIR PC11 (pin 52), EN PA15 (pin 50)
  *     A2 (J2, upper-west):    STEP PC0  (pin 8),  DIR PC1  (pin 9),  EN PC2  (pin 10)
  *     A3 (J3, lower-west):    STEP PA4  (pin 20), DIR PA5  (pin 21), EN PA6  (pin 22)
  *     A4 (J4, bottom-west):   STEP PA7  (pin 23), DIR PC4  (pin 24), EN PC5  (pin 25)
@@ -19,7 +19,8 @@
  *
  *   HATCH / L298N (J7, top edge): PB4, PB5, PB6, PB7
  *   RELAY LIGHT   (J7, top edge): PB8 (active low)
- *   CONSOLE UART  (J10, top edge): PA2 (TX), PA3 (RX)
+ *   PI UART       (J10, top edge): PC12 (TX, pin 53), PD2 (RX, pin 54)
+ *   CONSOLE UART  (auxiliary):    PA2 (TX, pin 16), PA3 (RX, pin 17)
  *   SWD DEBUG     (J11, top edge): PA13 (SWDIO), PA14 (SWCLK), NRST (pin 7)
  *   OSCILLATOR    (crystal Y1):   PH0 (OSC_IN), PH1 (OSC_OUT)
  *
@@ -37,7 +38,7 @@ typedef struct {
 
 static const AxisHw hw[NUM_AXES] = {
     /*          STEP               DIR                EN                 MIN                MAX            */
-    /* A1 */ { GPIOC, GPIO_PIN_10, GPIOC, GPIO_PIN_11, GPIOC, GPIO_PIN_12, GPIOB, GPIO_PIN_12, GPIOB, GPIO_PIN_13, false },
+    /* A1 */ { GPIOC, GPIO_PIN_10, GPIOC, GPIO_PIN_11, GPIOA, GPIO_PIN_15, GPIOB, GPIO_PIN_12, GPIOB, GPIO_PIN_13, false },
     /* A2 */ { GPIOC, GPIO_PIN_0,  GPIOC, GPIO_PIN_1,  GPIOC, GPIO_PIN_2,  GPIOB, GPIO_PIN_14, GPIOB, GPIO_PIN_15, false },
     /* A3 */ { GPIOA, GPIO_PIN_4,  GPIOA, GPIO_PIN_5,  GPIOA, GPIO_PIN_6,  GPIOC, GPIO_PIN_6,  GPIOC, GPIO_PIN_7,  false },
     /* A4 */ { GPIOA, GPIO_PIN_7,  GPIOC, GPIO_PIN_4,  GPIOC, GPIO_PIN_5,  GPIOC, GPIO_PIN_8,  GPIOC, GPIO_PIN_9,  false },

@@ -3,6 +3,7 @@ machine LoadPlatformDescription @platforms/cpus/stm32f4.repl
 
 # Suppress non-critical USART peripheral warnings
 logLevel 3 sysbus.usart2
+logLevel 3 sysbus.uart5
 
 # Increased quantum step size from 0.0001 to 0.001 to prevent host wall-clock timeout during motor stepping
 emulation SetGlobalQuantum "0.001"

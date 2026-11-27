@@ -8,11 +8,18 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-static UART_HandleTypeDef *uart = NULL;
+static UART_HandleTypeDef *uart_primary = NULL;
+static UART_HandleTypeDef *uart_secondary = NULL;
 
-static volatile char rx_buffer[48];
-static uint8_t        rx_char;
-static uint8_t        rx_idx = 0;
+static volatile char rx_buffer1[48];
+static uint8_t        rx_char1;
+static uint8_t        rx_idx1 = 0;
+
+static volatile char rx_buffer2[48];
+static uint8_t        rx_char2;
+static uint8_t        rx_idx2 = 0;
+
+static volatile char active_buffer[48];
 static volatile bool  cmd_ready = false;
 
 /* ---- argument helpers ---- */
@@ -183,8 +190,17 @@ static const Command commandTable[] = {
 /* ---- public API ---- */
 
 void commands_init(UART_HandleTypeDef *huart) {
-    uart = huart;
-    HAL_UART_Receive_IT(uart, &rx_char, 1);
+    uart_primary = huart;
+    if (uart_primary != NULL) {
+        HAL_UART_Receive_IT(uart_primary, &rx_char1, 1);
+    }
+}
+
+void commands_init_secondary(UART_HandleTypeDef *huart) {
+    uart_secondary = huart;
+    if (uart_secondary != NULL) {
+        HAL_UART_Receive_IT(uart_secondary, &rx_char2, 1);
+    }
 }
 
 void commands_update(uint32_t now) {
@@ -192,11 +208,11 @@ void commands_update(uint32_t now) {
 
     /* Snapshot under a critical section before clearing cmd_ready - once
      * cmd_ready goes false, the RX ISR is free to start overwriting
-     * rx_buffer for the next line, and without this copy that could
+     * active_buffer for the next line, and without this copy that could
      * happen mid-parse against the buffer we're still reading. */
-    char local_buf[sizeof(rx_buffer)];
+    char local_buf[sizeof(active_buffer)];
     CRITICAL_ENTER();
-    memcpy(local_buf, (const void*)rx_buffer, sizeof(local_buf));
+    memcpy(local_buf, (const void*)active_buffer, sizeof(local_buf));
     cmd_ready = false;
     CRITICAL_EXIT();
 
@@ -228,34 +244,58 @@ void commands_update(uint32_t now) {
  * Renode's virtual UART never raises these, so this only shows up on
  * real wiring - easy to miss without deliberately looking for it. */
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
-    if (uart != NULL && huart->Instance == uart->Instance) {
+    if (uart_primary != NULL && huart->Instance == uart_primary->Instance) {
         __HAL_UART_CLEAR_OREFLAG(huart);
         __HAL_UART_CLEAR_NEFLAG(huart);
         __HAL_UART_CLEAR_FEFLAG(huart);
         __HAL_UART_CLEAR_PEFLAG(huart);
-        rx_idx = 0; /* discard whatever partial line was in progress */
-        HAL_UART_Receive_IT(uart, &rx_char, 1);
+        rx_idx1 = 0; /* discard whatever partial line was in progress */
+        HAL_UART_Receive_IT(uart_primary, &rx_char1, 1);
+    } else if (uart_secondary != NULL && huart->Instance == uart_secondary->Instance) {
+        __HAL_UART_CLEAR_OREFLAG(huart);
+        __HAL_UART_CLEAR_NEFLAG(huart);
+        __HAL_UART_CLEAR_FEFLAG(huart);
+        __HAL_UART_CLEAR_PEFLAG(huart);
+        rx_idx2 = 0;
+        HAL_UART_Receive_IT(uart_secondary, &rx_char2, 1);
     }
 }
 
 /* HAL weak-callback override - this is the only file that touches the
- * UART RX line-buffer, so rx_buffer/rx_idx/cmd_ready above can stay
+ * UART RX line-buffers, so rx_buffer1/2 and active_buffer above can stay
  * file-scope statics instead of project-wide globals. */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
-    if (uart != NULL && huart->Instance == uart->Instance) {
-        if (rx_char == '\r') {
+    if (uart_primary != NULL && huart->Instance == uart_primary->Instance) {
+        if (rx_char1 == '\r') {
             /* ignore CR so \r\n acts as a single line terminator */
-        } else if (rx_char == '\n') {
-            if (rx_idx > 0 && !cmd_ready) {
-                rx_buffer[rx_idx] = '\0';
+        } else if (rx_char1 == '\n') {
+            if (rx_idx1 > 0 && !cmd_ready) {
+                rx_buffer1[rx_idx1] = '\0';
+                memcpy((void*)active_buffer, (const void*)rx_buffer1, rx_idx1 + 1);
                 cmd_ready = true;
-                rx_idx = 0;
+                rx_idx1 = 0;
             }
         } else {
-            if (rx_idx < sizeof(rx_buffer) - 1 && !cmd_ready) {
-                rx_buffer[rx_idx++] = rx_char;
+            if (rx_idx1 < sizeof(rx_buffer1) - 1 && !cmd_ready) {
+                rx_buffer1[rx_idx1++] = rx_char1;
             }
         }
-        HAL_UART_Receive_IT(uart, &rx_char, 1);
+        HAL_UART_Receive_IT(uart_primary, &rx_char1, 1);
+    } else if (uart_secondary != NULL && huart->Instance == uart_secondary->Instance) {
+        if (rx_char2 == '\r') {
+            /* ignore CR */
+        } else if (rx_char2 == '\n') {
+            if (rx_idx2 > 0 && !cmd_ready) {
+                rx_buffer2[rx_idx2] = '\0';
+                memcpy((void*)active_buffer, (const void*)rx_buffer2, rx_idx2 + 1);
+                cmd_ready = true;
+                rx_idx2 = 0;
+            }
+        } else {
+            if (rx_idx2 < sizeof(rx_buffer2) - 1 && !cmd_ready) {
+                rx_buffer2[rx_idx2++] = rx_char2;
+            }
+        }
+        HAL_UART_Receive_IT(uart_secondary, &rx_char2, 1);
     }
 }

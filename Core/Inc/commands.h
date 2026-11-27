@@ -8,6 +8,9 @@
  * handle and arms the first receive-interrupt. */
 void commands_init(UART_HandleTypeDef *huart);
 
+/* Optional secondary UART port (e.g. UART5 for Raspberry Pi communication). */
+void commands_init_secondary(UART_HandleTypeDef *huart);
+
 /* Call once per main-loop iteration. If a full line has been received,
  * looks it up in the command table and dispatches it. */
 void commands_update(uint32_t now);

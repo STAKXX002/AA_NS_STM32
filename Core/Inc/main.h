@@ -62,8 +62,14 @@ void Error_Handler(void);
 #define A1_STEP_GPIO_Port GPIOC
 #define A1_DIR_Pin GPIO_PIN_11
 #define A1_DIR_GPIO_Port GPIOC
-#define A1_EN_Pin GPIO_PIN_12
-#define A1_EN_GPIO_Port GPIOC
+#define A1_EN_Pin GPIO_PIN_15
+#define A1_EN_GPIO_Port GPIOA
+
+/* Raspberry Pi UART5 Interface (North edge, facing J10) */
+#define PI_UART5_TX_Pin GPIO_PIN_12
+#define PI_UART5_TX_GPIO_Port GPIOC
+#define PI_UART5_RX_Pin GPIO_PIN_2
+#define PI_UART5_RX_GPIO_Port GPIOD
 
 #define A2_STEP_Pin GPIO_PIN_0
 #define A2_STEP_GPIO_Port GPIOC

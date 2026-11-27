@@ -89,15 +89,15 @@ The pin assignment is strictly oriented to match the physical placement of perip
 
 ---
 
-### North Edge (Pins 49–64) — Faces J7 (L298N Hatch/Relay), J11 (ST-LINK), and J1 (A1 Driver)
+### North Edge (Pins 49–64) — Faces J1 (A1 Driver), J10 (Pi UART), J11 (ST-LINK), and J7 (L298N)
 | Pin # | Pin Name | Signal / Net Name | Target Connector | Type | 5V Tol | Function / Description |
 |:-----:|:---------|:------------------|:-----------------|:----:|:------:|:-----------------------|
 | 49 | PA14 | `SYS_JTCK-SWCLK` | J11 (Pin 3) | In | FT | SWD clock line (AF00) |
-| 50 | PA15 | SPARE_PA15 | Internal / Test | I/O | FT | Spare general purpose I/O (JTDI) |
-| 51 | PC10 | `A1_STEP` | J1 (Pin 1) | Out | FT | Axis A1 step pulse (active high) |
+| 50 | PA15 | `A1_EN` | J1 (Pin 1) | Out | FT | Axis A1 driver enable (active low, boot high) |
+| 51 | PC10 | `A1_STEP` | J1 (Pin 3) | Out | FT | Axis A1 step pulse (active high) |
 | 52 | PC11 | `A1_DIR` | J1 (Pin 2) | Out | FT | Axis A1 direction |
-| 53 | PC12 | `A1_EN` | J1 (Pin 3) | Out | FT | Axis A1 driver enable (active low, boot high) |
-| 54 | PD2 | SPARE_PD2 | Internal / Test | I/O | FT | Spare general purpose I/O |
+| 53 | PC12 | `UART5_TX` | J10 (Pin 2) | Out | FT | Raspberry Pi serial TX (AF08) |
+| 54 | PD2 | `UART5_RX` | J10 (Pin 3) | In | FT | Raspberry Pi serial RX (AF08) |
 | 55 | PB3 | SPARE_PB3 | J11 (Pin 5) | I/O | FT | SWO / JTDO (trace debug) / Spare I/O |
 | 56 | PB4 | `GRIP_IN1` | J7 (Pin 1) | Out | FT | Hatch H-bridge IN1 (push actuator) |
 | 57 | PB5 | `GRIP_IN2` | J7 (Pin 2) | Out | FT | Hatch H-bridge IN2 (retract actuator) |
@@ -116,9 +116,9 @@ The pin assignment is strictly oriented to match the physical placement of perip
 ### J1: Axis A1 Driver Header (4 pins, Top-West)
 | Pin # | Signal Name | MCU Pin | MCU Ball/Pad | Notes |
 |:-----:|:------------|:-------:|:------------:|:------|
-| 1 | `A1_STEP` | PC10 | Pin 51 | Output (North-West corner) |
+| 1 | `A1_EN`   | PA15 | Pin 50 | Output (Active low, initial high) |
 | 2 | `A1_DIR`  | PC11 | Pin 52 | Output |
-| 3 | `A1_EN`   | PC12 | Pin 53 | Output (Active low, initial high) |
+| 3 | `A1_STEP` | PC10 | Pin 51 | Output (North-West corner) |
 | 4 | GND       | GND  | Plane        | Ground return |
 
 ### J2: Axis A2 Driver Header (4 pins, Upper-West)
@@ -167,12 +167,14 @@ The pin assignment is strictly oriented to match the physical placement of perip
 | 5 | `RELAY_LIGHT` | PB8 | Pin 61 | Active-Low Light Relay |
 | 6 | `L298N_EN`    | PB9 | Pin 62 | Driver Enable / PWM |
 
-### J10: STM_Interface UART Header (3 pins, North-East)
-| Pin # | Signal Name | MCU Pin | MCU Ball/Pad | Function |
-|:-----:|:------------|:-------:|:------------:|:---------|
-| 1 | `USART2_TX` | PA2 | Pin 16 | Serial Transmit (AF07) |
-| 2 | `USART2_RX` | PA3 | Pin 17 | Serial Receive (AF07) |
-| 3 | GND         | GND | Plane  | Ground |
+### J10: PI_STM_Interface UART Header (3 pins, North)
+| Pin # | Signal Name | MCU Pin | MCU Ball/Pad | Target Pi 4B Pin | Function |
+|:-----:|:------------|:-------:|:------------:|:----------------:|:---------|
+| 1 | GND         | GND  | Plane  | Physical Pin 6 (GND) | Ground reference |
+| 2 | `UART5_TX`  | PC12 | Pin 53 | Physical Pin 10 (RXD0 / GPIO15) | Serial Transmit (AF08) |
+| 3 | `UART5_RX`  | PD2  | Pin 54 | Physical Pin 8 (TXD0 / GPIO14) | Serial Receive (AF08) |
+
+*(USART2 remains available on PA2 Pin 16 / PA3 Pin 17 as an auxiliary PC debug console).*
 
 ### J11: ST-LINK SWD Debug Header (5 pins, North)
 | Pin # | Signal Name | MCU Pin | MCU Ball/Pad | Function |

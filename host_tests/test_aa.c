@@ -20,13 +20,15 @@
 GPIO_TypeDef fakeGPIOA, fakeGPIOB, fakeGPIOC;
 static uint32_t tick_count;            /* 100 us ticks */
 static uint8_t *uart_rx_ptr;
+static uint8_t *uart5_rx_ptr;
 static UART_HandleTypeDef huart_fake = { (void*)1 };
+static UART_HandleTypeDef huart5_fake = { (void*)5 };
 static TIM_HandleTypeDef  htim_fake  = { (void*)2 };
 
 typedef struct { GPIO_TypeDef *p; uint16_t pin; } PinRef;
 static const PinRef STEP_PIN[NUM_AXES] = { {GPIOC,GPIO_PIN_10}, {GPIOC,GPIO_PIN_0}, {GPIOA,GPIO_PIN_4}, {GPIOA,GPIO_PIN_7} };
 static const PinRef DIR_PIN  [NUM_AXES] = { {GPIOC,GPIO_PIN_11}, {GPIOC,GPIO_PIN_1}, {GPIOA,GPIO_PIN_5}, {GPIOC,GPIO_PIN_4} };
-static const PinRef EN_PIN   [NUM_AXES] = { {GPIOC,GPIO_PIN_12}, {GPIOC,GPIO_PIN_2}, {GPIOA,GPIO_PIN_6}, {GPIOC,GPIO_PIN_5} };
+static const PinRef EN_PIN   [NUM_AXES] = { {GPIOA,GPIO_PIN_15}, {GPIOC,GPIO_PIN_2}, {GPIOA,GPIO_PIN_6}, {GPIOC,GPIO_PIN_5} };
 static const PinRef MIN_PIN  [NUM_AXES] = { {GPIOB,GPIO_PIN_12}, {GPIOB,GPIO_PIN_14}, {GPIOC,GPIO_PIN_6}, {GPIOC,GPIO_PIN_8} };
 static const PinRef MAX_PIN  [NUM_AXES] = { {GPIOB,GPIO_PIN_13}, {GPIOB,GPIO_PIN_15}, {GPIOC,GPIO_PIN_7}, {GPIOC,GPIO_PIN_9} };
 
@@ -52,7 +54,15 @@ void HAL_GPIO_WritePin(GPIO_TypeDef *p, uint16_t pin, GPIO_PinState s) {
         }
     }
 }
-int HAL_UART_Receive_IT(UART_HandleTypeDef *h, uint8_t *buf, uint16_t n) { (void)h; (void)n; uart_rx_ptr = buf; return 0; }
+int HAL_UART_Receive_IT(UART_HandleTypeDef *h, uint8_t *buf, uint16_t n) {
+    (void)n;
+    if (h == &huart5_fake) {
+        uart5_rx_ptr = buf;
+    } else {
+        uart_rx_ptr = buf;
+    }
+    return 0;
+}
 
 /* Interrupt injection. alignment.c reads the axis through four accessors;
  * the tick ISR can land between any two of those calls. isr_at selects the
@@ -113,6 +123,12 @@ static void send(const char *line) {
     *uart_rx_ptr = '\n'; HAL_UART_RxCpltCallback(&huart_fake);
     step_ms();
 }
+static void send_uart5(const char *line) {
+    new_mark();
+    for (const char *c = line; *c; c++) { *uart5_rx_ptr = (uint8_t)*c; HAL_UART_RxCpltCallback(&huart5_fake); }
+    *uart5_rx_ptr = '\n'; HAL_UART_RxCpltCallback(&huart5_fake);
+    step_ms();
+}
 
 #define CHECK(cond, ...) do { checks++; if (!(cond)) { failures++; fprintf(stderr, "    FAIL %s:%d: ", __FILE__, __LINE__); fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n"); } } while (0)
 #define SEEN(s)  CHECK(seen(s), "expected \"%s\" in output, got:\n%s", s, out_since_mark())
@@ -131,6 +147,7 @@ static void fresh(double travel_mm, double start_mm) {
     }
     alignment_init(&htim_fake);
     commands_init(&huart_fake);
+    commands_init_secondary(&huart5_fake);
     relay_init();
     system_clear_fault();
     alignment_reset();
@@ -312,6 +329,15 @@ static void t_commands(void) {
     CHECK(total_steps[1] == 0, "HOME ALL must not partially start when one axis is busy");
 }
 
+static void t_uart5_pi_commands(void) {
+    fresh(100, 10);
+    send_uart5("FOO");        SEEN("UNKNOWN");
+    send_uart5("HOME");       SEEN("INVALID");
+    send_uart5("HOME 1");     SEEN("A1 HOME");
+    send_uart5("HOME 1");     SEEN("BUSY");
+    send_uart5("STOP");       SEEN("STOPPED");
+}
+
 static void t_reversed_direction(void) {
     /* Reversed motor wiring: HOME drives toward the FAR end. The ISR does not
      * guard that switch (it only watches the one in the direction of travel),
@@ -385,6 +411,7 @@ int main(void) {
         {"min_not_found", t_min_not_found}, {"start_on_switch", t_start_on_switch},
         {"fault_stops_all", t_fault_stops_all}, {"debounce", t_debounce},
         {"hatch_interlock", t_hatch_interlock}, {"stop_and_rst", t_stop_and_rst}, {"commands", t_commands},
+        {"uart5_pi_commands", t_uart5_pi_commands},
         {"reversed_direction", t_reversed_direction}, {"switch_during_move", t_switch_during_move},
         {"isr_between_reads", t_isr_between_reads},
     };
