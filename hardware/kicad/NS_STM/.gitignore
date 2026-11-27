@@ -1,0 +1,6 @@
+# KiCad temporary and backup files
+*.lck
+*-backups/
+.history/
+fp-info-cache
+*.zip
